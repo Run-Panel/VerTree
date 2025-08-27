@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  update-service:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - DB_DRIVER=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=updateservice
+      - DB_PASSWORD=updateservice_password
+      - DB_NAME=update_service
+      - DB_SSLMODE=disable
+      - ENVIRONMENT=production
+      - REGION=${REGION:-global}
+      - DOMAIN=${DOMAIN:-localhost}
+      - UPLOAD_PATH=./uploads
+    volumes:
+      - ./uploads:/root/uploads
+      - ./config:/root/config
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: update_service
+      POSTGRES_USER: updateservice
+      POSTGRES_PASSWORD: updateservice_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - update-service
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

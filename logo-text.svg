@@ -1,0 +1,67 @@
+<svg width="300" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 渐变定义 -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1677ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#52c41a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1677ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#52c41a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Logo图标部分 -->
+  <g transform="translate(10, 10)">
+    <!-- 背景圆圈 -->
+    <circle cx="30" cy="30" r="28" fill="white" stroke="url(#logoGradient)" stroke-width="2"/>
+    
+    <!-- 树干 -->
+    <rect x="27" y="35" width="6" height="15" rx="3" fill="url(#logoGradient)"/>
+    
+    <!-- 主节点 -->
+    <circle cx="30" cy="37" r="2.5" fill="#1677ff"/>
+    
+    <!-- 左分支 -->
+    <line x1="30" y1="37" x2="20" y2="30" stroke="url(#logoGradient)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="20" cy="30" r="2" fill="#52c41a"/>
+    
+    <!-- 左子分支 -->
+    <line x1="20" y1="30" x2="12" y2="22" stroke="url(#logoGradient)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="12" cy="22" r="1.5" fill="#1677ff"/>
+    
+    <line x1="20" y1="30" x2="15" y2="37" stroke="url(#logoGradient)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="15" cy="37" r="1.5" fill="#52c41a"/>
+    
+    <!-- 右分支 -->
+    <line x1="30" y1="37" x2="40" y2="30" stroke="url(#logoGradient)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="40" cy="30" r="2" fill="#52c41a"/>
+    
+    <!-- 右子分支 -->
+    <line x1="40" y1="30" x2="48" y2="22" stroke="url(#logoGradient)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="48" cy="22" r="1.5" fill="#1677ff"/>
+    
+    <line x1="40" y1="30" x2="45" y2="37" stroke="url(#logoGradient)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="45" cy="37" r="1.5" fill="#52c41a"/>
+    
+    <!-- 顶部分支 -->
+    <line x1="30" y1="37" x2="30" y2="22" stroke="url(#logoGradient)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="30" cy="22" r="2" fill="#1677ff"/>
+    
+    <!-- 顶部分叉 -->
+    <line x1="30" y1="22" x2="25" y2="12" stroke="url(#logoGradient)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="25" cy="12" r="1.5" fill="#52c41a"/>
+    
+    <line x1="30" y1="22" x2="35" y2="12" stroke="url(#logoGradient)" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="35" cy="12" r="1.5" fill="#52c41a"/>
+  </g>
+  
+  <!-- 文字部分 -->
+  <g transform="translate(80, 0)">
+    <!-- VerTree 文字 -->
+    <text x="0" y="35" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="bold" fill="url(#textGradient)">VerTree</text>
+    
+    <!-- 副标题 -->
+    <text x="0" y="55" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#666">Lightweight Version Control System</text>
+  </g>
+</svg>

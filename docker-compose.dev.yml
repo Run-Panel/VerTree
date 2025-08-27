@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  update-service:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - DB_DRIVER=sqlite
+      - DB_NAME=update_service
+      - ENVIRONMENT=development
+      - REGION=global
+      - DOMAIN=localhost
+      - UPLOAD_PATH=./uploads
+    volumes:
+      - ./uploads:/root/uploads
+      - ./update_service.db:/root/update_service.db
+    restart: unless-stopped
