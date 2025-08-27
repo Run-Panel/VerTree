@@ -110,14 +110,111 @@
         </div>
       </el-main>
     </el-container>
+
+    <!-- First Login Password Change Dialog -->
+    <el-dialog
+      v-model="showFirstLoginDialog"
+      :title="$t('layout.firstLoginPasswordChange')"
+      width="500px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
+      <div class="dialog-content">
+        <el-alert
+          :title="$t('layout.firstLoginAlert')"
+          type="warning"
+          :closable="false"
+          show-icon
+          style="margin-bottom: 20px;"
+        />
+        
+        <el-form
+          ref="passwordForm"
+          :model="passwordFormData"
+          :rules="passwordRules"
+          label-width="120px"
+        >
+          <el-form-item :label="$t('common.newPassword')" prop="newPassword">
+            <el-input
+              v-model="passwordFormData.newPassword"
+              type="password"
+              show-password
+              :placeholder="$t('common.enterNewPassword')"
+            />
+          </el-form-item>
+          
+          <el-form-item :label="$t('common.confirmPassword')" prop="confirmPassword">
+            <el-input
+              v-model="passwordFormData.confirmPassword"
+              type="password"
+              show-password
+              :placeholder="$t('common.confirmNewPassword')"
+            />
+          </el-form-item>
+        </el-form>
+      </div>
+      
+      <template #footer>
+        <el-button type="primary" @click="handlePasswordChange" style="width: 100%;">
+          {{ $t('common.confirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Regular Password Change Dialog -->
+    <el-dialog
+      v-model="showChangePasswordDialog"
+      :title="$t('layout.changePassword')"
+      width="500px"
+    >
+      <el-form
+        ref="passwordForm"
+        :model="passwordFormData"
+        :rules="passwordRules"
+        label-width="120px"
+      >
+        <el-form-item :label="$t('common.currentPassword')" prop="currentPassword">
+          <el-input
+            v-model="passwordFormData.currentPassword"
+            type="password"
+            show-password
+            :placeholder="$t('common.enterCurrentPassword')"
+          />
+        </el-form-item>
+        
+        <el-form-item :label="$t('common.newPassword')" prop="newPassword">
+          <el-input
+            v-model="passwordFormData.newPassword"
+            type="password"
+            show-password
+            :placeholder="$t('common.enterNewPassword')"
+          />
+        </el-form-item>
+        
+        <el-form-item :label="$t('common.confirmPassword')" prop="confirmPassword">
+          <el-input
+            v-model="passwordFormData.confirmPassword"
+            type="password"
+            show-password
+            :placeholder="$t('common.confirmNewPassword')"
+          />
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="cancelPasswordChange">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handlePasswordChange">{{ $t('common.confirm') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElDialog, ElForm, ElFormItem, ElInput, ElButton } from 'element-plus'
 import { useAuthStore } from '@/store/auth'
 import { Expand, Fold } from '@element-plus/icons-vue'
 
@@ -128,11 +225,77 @@ const authStore = useAuthStore()
 // Reactive state
 const sidebarCollapsed = ref(false)
 const userAvatar = ref('')
+const showFirstLoginDialog = ref(false)
+const showChangePasswordDialog = ref(false)
+const passwordForm = ref(null)
+const passwordFormData = ref({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
 
 // Computed properties
 const currentLocale = computed(() => locale.value)
 const currentUser = computed(() => authStore.currentUser)
 const sidebarWidth = computed(() => sidebarCollapsed.value ? '80px' : '280px')
+
+// Password form rules
+const passwordRules = {
+  currentPassword: [
+    { 
+      validator: (rule, value, callback) => {
+        if (!currentUser.value?.first_login && (!value || value.trim() === '')) {
+          callback(new Error(t('common.currentPasswordRequired')))
+        } else {
+          callback()
+        }
+      }, 
+      trigger: 'blur' 
+    }
+  ],
+  newPassword: [
+    { required: true, message: t('common.newPasswordRequired'), trigger: 'blur' },
+    { min: 6, message: t('common.passwordLengthError'), trigger: 'blur' },
+    { 
+      validator: (rule, value, callback) => {
+        if (value && value.length >= 6) {
+          const hasLetter = /[a-zA-Z]/.test(value)
+          const hasNumber = /[0-9]/.test(value)
+          if (!hasLetter || !hasNumber) {
+            callback(new Error(t('common.passwordComplexityError')))
+          } else {
+            callback()
+          }
+        } else {
+          callback()
+        }
+      }, 
+      trigger: 'blur' 
+    }
+  ],
+  confirmPassword: [
+    { required: true, message: t('common.confirmPasswordRequired'), trigger: 'blur' },
+    { 
+      validator: (rule, value, callback) => {
+        if (value !== passwordFormData.value.newPassword) {
+          callback(new Error(t('common.passwordMismatch')))
+        } else {
+          callback()
+        }
+      }, 
+      trigger: 'blur' 
+    }
+  ]
+}
+
+// Check for first login on mount
+onMounted(() => {
+  if (currentUser.value?.first_login) {
+    setTimeout(() => {
+      showFirstLoginPasswordDialog()
+    }, 1000)
+  }
+})
 
 // Sidebar toggle function
 const toggleSidebar = () => {
@@ -153,7 +316,7 @@ const handleUserCommand = async (command) => {
       break
     
     case 'change-password':
-      showChangePasswordDialog()
+      showChangePasswordDialogForm()
       break
     
     case 'logout':
@@ -187,36 +350,74 @@ const handleLogout = async () => {
 }
 
 // Show change password dialog
-const showChangePasswordDialog = () => {
-  ElMessageBox.prompt(
-    t('layout.enterNewPassword') || 'Please enter new password',
-    t('layout.changePassword'),
-    {
-      confirmButtonText: t('common.confirm'),
-      cancelButtonText: t('common.cancel'),
-      inputPattern: /.{6,}/,
-      inputErrorMessage: t('common.passwordLengthError') || 'Password must be at least 6 characters',
-      inputType: 'password'
-    }
-  ).then(async ({ value }) => {
-    try {
-      // Note: In a real application, current password should be required
-      // This is simplified for demonstration purposes
-      const result = await authStore.changePassword('', value)
+// Show first login password dialog (mandatory)
+const showFirstLoginPasswordDialog = () => {
+  showFirstLoginDialog.value = true
+  passwordFormData.value = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  }
+}
+
+// Show regular change password dialog
+const showChangePasswordDialogForm = () => {
+  showChangePasswordDialog.value = true
+  passwordFormData.value = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  }
+}
+
+// Handle password change
+const handlePasswordChange = async () => {
+  if (!passwordForm.value) return
+  
+  try {
+    await passwordForm.value.validate()
+    
+    const currentPassword = currentUser.value?.first_login ? '' : passwordFormData.value.currentPassword
+    const result = await authStore.changePassword(currentPassword, passwordFormData.value.newPassword)
+    
+    if (result.success) {
+      ElMessage.success(t('common.passwordChangeSuccess'))
       
-      if (result.success) {
-        ElMessage.success(t('common.passwordChangeSuccess') || 'Password changed successfully, please login again')
+      // Close dialogs
+      showFirstLoginDialog.value = false
+      showChangePasswordDialog.value = false
+      
+      // If it was first login, refresh user data and show success
+      if (currentUser.value?.first_login) {
+        await authStore.fetchProfile() // Refresh user data
+        ElMessage.success(t('layout.firstLoginCompleted'))
+      } else {
+        // For regular password change, logout and redirect to login
+        ElMessage.success(t('common.passwordChangeSuccess') + ', ' + t('layout.pleaseLoginAgain'))
         await authStore.logout()
         router.push('/login')
-      } else {
-        ElMessage.error(result.message || t('common.passwordChangeFailed') || 'Failed to change password')
       }
-    } catch (error) {
-      ElMessage.error(t('common.passwordChangeFailed') + ': ' + error.message)
+    } else {
+      ElMessage.error(result.message || t('common.passwordChangeFailed'))
     }
-  }).catch(() => {
-    // User cancelled
-  })
+  } catch (error) {
+    ElMessage.error(t('common.passwordChangeFailed') + ': ' + error.message)
+  }
+}
+
+// Cancel password change (only allowed for non-first-login)
+const cancelPasswordChange = () => {
+  if (currentUser.value?.first_login) {
+    ElMessage.warning(t('layout.firstLoginMandatory'))
+    return
+  }
+  
+  showChangePasswordDialog.value = false
+  passwordFormData.value = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  }
 }
 </script>
 

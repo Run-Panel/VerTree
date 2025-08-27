@@ -156,15 +156,23 @@ export const useAuthStore = defineStore('auth', {
     // 修改密码
     async changePassword(currentPassword, newPassword) {
       try {
-        const response = await request.post('/change-password', {
-          current_password: currentPassword,
+        const requestData = {
           new_password: newPassword
-        })
+        }
+        
+        // 只有当前密码不为空时才添加
+        if (currentPassword && currentPassword.trim()) {
+          requestData.current_password = currentPassword
+        } else {
+          requestData.current_password = ""
+        }
+
+        const response = await request.post('/change-password', requestData)
 
         if (response.code === 200) {
           return { success: true }
         } else {
-          throw new Error(response.data.message || '密码修改失败')
+          throw new Error(response.message || '密码修改失败')
         }
       } catch (error) {
         return {

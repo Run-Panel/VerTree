@@ -29,8 +29,19 @@
     "database": "数据库",
     "storage": "存储",
     "passwordLengthError": "密码长度不能少于6位",
+    "passwordComplexityError": "密码必须包含至少一个字母和一个数字",
     "passwordChangeSuccess": "密码修改成功，请重新登录",
-    "passwordChangeFailed": "密码修改失败"
+    "passwordChangeFailed": "密码修改失败",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认密码",
+    "enterCurrentPassword": "请输入当前密码",
+    "enterNewPassword": "请输入新密码",
+    "confirmNewPassword": "请确认新密码",
+    "currentPasswordRequired": "请输入当前密码",
+    "newPasswordRequired": "请输入新密码",
+    "confirmPasswordRequired": "请确认新密码",
+    "passwordMismatch": "两次输入的密码不一致"
   },
   "version": {
     "title": "版本管理",
@@ -89,13 +100,19 @@
     "profile": "个人资料",
     "changePassword": "修改密码",
     "logout": "退出登录",
-    "confirmLogout": "确定要退出登录吗？",
+    "logoutConfirm": "确定要退出登录吗？",
+    "logoutTitle": "退出登录",
     "logoutSuccess": "已退出登录",
     "logoutFailed": "退出登录失败",
     "language": "语言",
     "chinese": "中文",
     "english": "English",
-    "enterNewPassword": "请输入新密码"
+    "enterNewPassword": "请输入新密码",
+    "firstLoginPasswordChange": "首次登录密码修改",
+    "firstLoginAlert": "检测到这是您的首次登录，为了账户安全，请立即修改密码。",
+    "firstLoginCompleted": "首次登录设置完成！",
+    "firstLoginMandatory": "首次登录必须修改密码",
+    "pleaseLoginAgain": "请重新登录"
   },
   "login": {
     "title": "VerTree 管理系统",
@@ -111,7 +128,9 @@
     "loginSuccess": "登录成功",
     "welcomeBack": "欢迎回来",
     "loginFailed": "登录失败",
-    "networkError": "网络错误"
+    "networkError": "网络错误",
+    "firstLoginTitle": "首次登录提醒",
+    "firstLoginMessage": "检测到这是您的首次登录，登录后请立即修改密码以确保账户安全。"
   },
   "statistics": {
     "period": {

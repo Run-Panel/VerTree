@@ -8,16 +8,17 @@ import (
 
 // Admin represents an admin user
 type Admin struct {
-	ID        uint           `json:"id" gorm:"primarykey"`
-	Username  string         `json:"username" gorm:"type:varchar(50);uniqueIndex;not null" validate:"required,min=3,max=50"`
-	Email     string         `json:"email" gorm:"type:varchar(100);uniqueIndex;not null" validate:"required,email"`
-	Password  string         `json:"-" gorm:"type:varchar(255);not null"` // Never expose password in JSON
-	Role      string         `json:"role" gorm:"type:varchar(20);not null;default:'admin'" validate:"required,oneof=admin superadmin"`
-	IsActive  bool           `json:"is_active" gorm:"default:true"`
-	LastLogin *time.Time     `json:"last_login"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+	ID         uint           `json:"id" gorm:"primarykey"`
+	Username   string         `json:"username" gorm:"type:varchar(50);uniqueIndex;not null" validate:"required,min=3,max=50"`
+	Email      string         `json:"email" gorm:"type:varchar(100);uniqueIndex;not null" validate:"required,email"`
+	Password   string         `json:"-" gorm:"type:varchar(255);not null"` // Never expose password in JSON
+	Role       string         `json:"role" gorm:"type:varchar(20);not null;default:'admin'" validate:"required,oneof=admin superadmin"`
+	IsActive   bool           `json:"is_active" gorm:"default:true"`
+	FirstLogin bool           `json:"first_login" gorm:"default:true"`
+	LastLogin  *time.Time     `json:"last_login"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 // LoginRequest represents a login request
@@ -36,10 +37,11 @@ type LoginResponse struct {
 
 // AdminInfo represents public admin information
 type AdminInfo struct {
-	ID       uint   `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
+	ID         uint   `json:"id"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+	Role       string `json:"role"`
+	FirstLogin bool   `json:"first_login"`
 }
 
 // RefreshTokenRequest represents a token refresh request
@@ -49,7 +51,7 @@ type RefreshTokenRequest struct {
 
 // ChangePasswordRequest represents a password change request
 type ChangePasswordRequest struct {
-	CurrentPassword string `json:"current_password" validate:"required" binding:"required"`
+	CurrentPassword string `json:"current_password" validate:"omitempty" binding:"omitempty"`
 	NewPassword     string `json:"new_password" validate:"required,min=6" binding:"required"`
 }
 
@@ -101,9 +103,10 @@ func (RefreshToken) TableName() string {
 // ToAdminInfo converts Admin to AdminInfo
 func (a *Admin) ToAdminInfo() AdminInfo {
 	return AdminInfo{
-		ID:       a.ID,
-		Username: a.Username,
-		Email:    a.Email,
-		Role:     a.Role,
+		ID:         a.ID,
+		Username:   a.Username,
+		Email:      a.Email,
+		Role:       a.Role,
+		FirstLogin: a.FirstLogin,
 	}
 }

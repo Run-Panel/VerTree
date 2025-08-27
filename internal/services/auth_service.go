@@ -178,13 +178,16 @@ func (s *AuthService) ChangePassword(userID uint, currentPassword, newPassword s
 		return err
 	}
 
-	// Verify current password
-	isValid, err := utils.VerifyPassword(currentPassword, admin.Password)
-	if err != nil {
-		return err
-	}
-	if !isValid {
-		return errors.New("current password is incorrect")
+	// If current password is empty, this might be a first login password change
+	if currentPassword != "" {
+		// Verify current password
+		isValid, err := utils.VerifyPassword(currentPassword, admin.Password)
+		if err != nil {
+			return err
+		}
+		if !isValid {
+			return errors.New("current password is incorrect")
+		}
 	}
 
 	// Validate new password strength
@@ -198,8 +201,9 @@ func (s *AuthService) ChangePassword(userID uint, currentPassword, newPassword s
 		return err
 	}
 
-	// Update password
+	// Update password and mark first login as completed
 	admin.Password = hashedPassword
+	admin.FirstLogin = false
 	if err := db.Save(&admin).Error; err != nil {
 		return err
 	}

@@ -29,8 +29,19 @@
     "database": "Database",
     "storage": "Storage",
     "passwordLengthError": "Password must be at least 6 characters",
+    "passwordComplexityError": "Password must contain at least one letter and one number",
     "passwordChangeSuccess": "Password changed successfully, please login again",
-    "passwordChangeFailed": "Failed to change password"
+    "passwordChangeFailed": "Failed to change password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "enterCurrentPassword": "Please enter current password",
+    "enterNewPassword": "Please enter new password",
+    "confirmNewPassword": "Please confirm new password",
+    "currentPasswordRequired": "Please enter current password",
+    "newPasswordRequired": "Please enter new password",
+    "confirmPasswordRequired": "Please confirm new password",
+    "passwordMismatch": "Passwords do not match"
   },
   "version": {
     "title": "Version Management",
@@ -89,13 +100,19 @@
     "profile": "Profile",
     "changePassword": "Change Password",
     "logout": "Logout",
-    "confirmLogout": "Are you sure you want to logout?",
+    "logoutConfirm": "Are you sure you want to logout?",
+    "logoutTitle": "Logout",
     "logoutSuccess": "Logged out successfully",
     "logoutFailed": "Failed to logout",
     "language": "Language",
     "chinese": "中文",
     "english": "English",
-    "enterNewPassword": "Please enter new password"
+    "enterNewPassword": "Please enter new password",
+    "firstLoginPasswordChange": "First Login Password Change",
+    "firstLoginAlert": "This is your first login. For security reasons, please change your password immediately.",
+    "firstLoginCompleted": "First login setup completed!",
+    "firstLoginMandatory": "Password change is mandatory for first login",
+    "pleaseLoginAgain": "please login again"
   },
   "login": {
     "title": "VerTree Management System",
@@ -111,7 +128,9 @@
     "loginSuccess": "Login successful",
     "welcomeBack": "Welcome back",
     "loginFailed": "Login failed",
-    "networkError": "Network error"
+    "networkError": "Network error",
+    "firstLoginTitle": "First Login Reminder",
+    "firstLoginMessage": "This is your first login. Please change your password after login to ensure account security."
   },
   "statistics": {
     "period": {

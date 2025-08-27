@@ -2,8 +2,12 @@ package database
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/Run-Panel/VerTree/internal/config"
@@ -77,6 +81,16 @@ func Initialize(cfg *config.Config) error {
 	// Test connection
 	if err := sqlDB.Ping(); err != nil {
 		return fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	// Run database migrations
+	if err := AutoMigrate(); err != nil {
+		return fmt.Errorf("failed to run auto migration: %w", err)
+	}
+
+	// Run SQL migrations
+	if err := RunSQLMigrations(); err != nil {
+		return fmt.Errorf("failed to run SQL migrations: %w", err)
 	}
 
 	log.Printf("Successfully connected to %s database", cfg.Database.Driver)
@@ -175,5 +189,78 @@ func Close() error {
 		}
 		return sqlDB.Close()
 	}
+	return nil
+}
+
+// Migration represents a database migration
+type Migration struct {
+	ID        uint   `gorm:"primaryKey"`
+	Filename  string `gorm:"uniqueIndex;not null"`
+	AppliedAt time.Time
+}
+
+// RunSQLMigrations runs SQL migration files from the migrations directory
+func RunSQLMigrations() error {
+	// Ensure migration tracking table exists
+	if err := DB.AutoMigrate(&Migration{}); err != nil {
+		return fmt.Errorf("failed to create migrations table: %w", err)
+	}
+
+	// Read migration files
+	migrationsDir := "./migrations"
+	if _, err := os.Stat(migrationsDir); os.IsNotExist(err) {
+		log.Println("No migrations directory found, skipping SQL migrations")
+		return nil
+	}
+
+	files, err := ioutil.ReadDir(migrationsDir)
+	if err != nil {
+		return fmt.Errorf("failed to read migrations directory: %w", err)
+	}
+
+	// Filter and sort SQL files
+	var sqlFiles []string
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".sql") {
+			sqlFiles = append(sqlFiles, file.Name())
+		}
+	}
+	sort.Strings(sqlFiles)
+
+	// Apply migrations
+	for _, filename := range sqlFiles {
+		// Check if migration was already applied
+		var migration Migration
+		result := DB.Where("filename = ?", filename).First(&migration)
+		if result.Error == nil {
+			// Migration already applied
+			continue
+		}
+
+		// Read migration file
+		filePath := filepath.Join(migrationsDir, filename)
+		content, err := ioutil.ReadFile(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to read migration file %s: %w", filename, err)
+		}
+
+		// Execute migration
+		log.Printf("Applying migration: %s", filename)
+		if err := DB.Exec(string(content)).Error; err != nil {
+			return fmt.Errorf("failed to apply migration %s: %w", filename, err)
+		}
+
+		// Record migration as applied
+		migration = Migration{
+			Filename:  filename,
+			AppliedAt: time.Now(),
+		}
+		if err := DB.Create(&migration).Error; err != nil {
+			return fmt.Errorf("failed to record migration %s: %w", filename, err)
+		}
+
+		log.Printf("Successfully applied migration: %s", filename)
+	}
+
 	return nil
 }
