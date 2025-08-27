@@ -235,7 +235,6 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Run-Panel/VerTree/issues)
 - 💡 **Feature Requests**: [GitHub Discussions](https://github.com/Run-Panel/VerTree/discussions)
 - 📖 **Documentation**: Check our [Wiki](https://github.com/Run-Panel/VerTree/wiki)
-- 🔒 **Security Issues**: Please email security@example.com
 
 ## 📋 Project Status
 
