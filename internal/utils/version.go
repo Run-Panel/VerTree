@@ -187,4 +187,3 @@ func (vc *VersionComparer) SortVersions(versions []string) []string {
 
 	return sorted
 }
-

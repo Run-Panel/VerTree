@@ -160,4 +160,3 @@ func init() {
 		os.Setenv("GOPATH", gopath+string(filepath.ListSeparator)+wd)
 	}
 }
-
