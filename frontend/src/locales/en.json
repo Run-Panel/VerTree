@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "applications": "Applications",
     "version": "Version Management",
     "channel": "Channel Management",
     "statistics": "Statistics"
@@ -46,6 +47,7 @@
   "version": {
     "title": "Version Management",
     "createVersion": "Create New Version",
+    "application": "Application",
     "versionNumber": "Version Number",
     "channel": "Release Channel",
     "versionTitle": "Version Title",

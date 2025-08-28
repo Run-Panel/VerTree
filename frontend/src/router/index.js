@@ -28,6 +28,15 @@ const routes = [
         }
       },
       {
+        path: 'applications',
+        name: 'Applications',
+        component: () => import('@/views/Applications.vue'),
+        meta: { 
+          titleKey: 'nav.applications',
+          permission: 'admin'
+        }
+      },
+      {
         path: 'versions',
         name: 'VersionManagement',
         component: () => import('@/views/VersionManagement.vue'),
@@ -51,6 +60,15 @@ const routes = [
         component: () => import('@/views/Statistics.vue'),
         meta: { 
           titleKey: 'nav.statistics',
+          permission: 'admin'
+        }
+      },
+      {
+        path: 'docs',
+        name: 'APIDocs',
+        component: () => import('@/views/APIDocs.vue'),
+        meta: { 
+          titleKey: 'docs.title',
           permission: 'admin'
         }
       }

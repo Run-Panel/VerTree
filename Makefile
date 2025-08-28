@@ -39,6 +39,7 @@ clean:
 	rm -rf bin/
 	rm -rf web/admin/
 	rm -f *.db
+	rm -f data/*.db
 
 # Build frontend
 frontend:

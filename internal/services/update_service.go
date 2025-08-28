@@ -28,6 +28,12 @@ func NewUpdateService() *UpdateService {
 
 // CheckUpdate checks for available updates
 func (s *UpdateService) CheckUpdate(req *models.CheckUpdateRequest, clientIP string) (*models.CheckUpdateResponse, error) {
+	// Validate that the app exists and is active
+	var app models.Application
+	if err := s.db.Where("app_id = ? AND is_active = ?", req.AppID, true).First(&app).Error; err != nil {
+		return nil, fmt.Errorf("application not found or inactive: %s", req.AppID)
+	}
+
 	// Record the check action
 	statReq := &models.UpdateStatRequest{
 		Version:       req.CurrentVersion,
@@ -45,18 +51,18 @@ func (s *UpdateService) CheckUpdate(req *models.CheckUpdateRequest, clientIP str
 		}
 	}()
 
-	// Validate channel
-	channel, err := s.channelSvc.GetChannelByName(req.Channel)
+	// Validate channel for this specific app
+	channel, err := s.channelSvc.GetChannelByAppAndName(req.AppID, req.Channel)
 	if err != nil {
-		return nil, fmt.Errorf("invalid channel: %s", req.Channel)
+		return nil, fmt.Errorf("invalid channel %s for app %s", req.Channel, req.AppID)
 	}
 
 	if !channel.IsActive {
 		return nil, fmt.Errorf("channel %s is not active", req.Channel)
 	}
 
-	// Get latest version for the channel
-	latestVersion, err := s.versionSvc.GetLatestVersion(req.Channel)
+	// Get latest version for the app and channel
+	latestVersion, err := s.versionSvc.GetLatestVersionForApp(req.AppID, req.Channel)
 	if err != nil {
 		// No published version available
 		return &models.CheckUpdateResponse{

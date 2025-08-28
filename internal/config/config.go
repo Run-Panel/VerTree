@@ -59,7 +59,7 @@ func Load() *Config {
 			Port:     getEnv("DB_PORT", "5432"),
 			User:     getEnv("DB_USER", "runpanel"),
 			Password: getEnv("DB_PASSWORD", ""),
-			Name:     getEnv("DB_NAME", "runpanel_updates"),
+			Name:     getEnv("DB_NAME", "vertree"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		App: AppConfig{

@@ -14,6 +14,16 @@
       </div>
       
       <div class="header-right">
+        <!-- API Documentation -->
+        <el-button 
+          class="header-action-btn docs-btn" 
+          text 
+          @click="$router.push('/docs')"
+        >
+          <el-icon><Document /></el-icon>
+          <span class="mobile-hidden">API文档</span>
+        </el-button>
+
         <!-- Language Switch -->
         <el-dropdown @command="handleLanguageCommand" class="language-dropdown">
           <el-button class="header-action-btn" text>
@@ -82,6 +92,11 @@
           <el-menu-item index="/dashboard" class="menu-item">
             <el-icon><Odometer /></el-icon>
             <template #title>{{ $t('nav.dashboard') }}</template>
+          </el-menu-item>
+          
+          <el-menu-item index="/applications" class="menu-item">
+            <el-icon><Files /></el-icon>
+            <template #title>{{ $t('nav.applications') }}</template>
           </el-menu-item>
           
           <el-menu-item index="/versions" class="menu-item">
@@ -216,7 +231,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, ElDialog, ElForm, ElFormItem, ElInput, ElButton } from 'element-plus'
 import { useAuthStore } from '@/store/auth'
-import { Expand, Fold } from '@element-plus/icons-vue'
+import { Expand, Fold, Files, Document } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const { locale, t } = useI18n()

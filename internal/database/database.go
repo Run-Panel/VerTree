@@ -12,6 +12,7 @@ import (
 
 	"github.com/Run-Panel/VerTree/internal/config"
 	"github.com/Run-Panel/VerTree/internal/models"
+	"github.com/Run-Panel/VerTree/internal/utils"
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -100,6 +101,8 @@ func Initialize(cfg *config.Config) error {
 // AutoMigrate runs database migrations
 func AutoMigrate() error {
 	err := DB.AutoMigrate(
+		&models.Application{},
+		&models.ApplicationKey{},
 		&models.Version{},
 		&models.Channel{},
 		&models.UpdateRule{},
@@ -169,8 +172,42 @@ func SeedDefaultData() error {
 
 	// If admins don't exist, create default admin
 	if adminCount == 0 {
-		log.Println("ℹ️  No admin users found. Please run 'go run scripts/create-admin.go' to create the default admin user.")
+		log.Println("🔐 No admin users found. Creating default admin user...")
+		if err := createDefaultAdmin(); err != nil {
+			return fmt.Errorf("failed to create default admin: %w", err)
+		}
+		log.Println("✅ Default admin user created successfully")
 	}
+
+	return nil
+}
+
+// createDefaultAdmin creates a default admin user
+func createDefaultAdmin() error {
+	// Import utils package for password hashing
+	hashedPassword, err := utils.HashPassword("admin123")
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	admin := models.Admin{
+		Username: "admin",
+		Email:    "admin@runpanel.dev",
+		Password: hashedPassword,
+		Role:     "superadmin",
+		IsActive: true,
+	}
+
+	if err := DB.Create(&admin).Error; err != nil {
+		return fmt.Errorf("failed to create admin: %w", err)
+	}
+
+	log.Printf("🔐 Default admin created:")
+	log.Printf("   Username: %s", admin.Username)
+	log.Printf("   Email: %s", admin.Email)
+	log.Printf("   Password: admin123")
+	log.Printf("   Role: %s", admin.Role)
+	log.Printf("   ⚠️  PLEASE CHANGE THE DEFAULT PASSWORD AFTER FIRST LOGIN!")
 
 	return nil
 }

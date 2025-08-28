@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "仪表板",
+    "applications": "应用管理",
     "version": "版本管理",
     "channel": "通道管理",
     "statistics": "统计分析"
@@ -46,6 +47,7 @@
   "version": {
     "title": "版本管理",
     "createVersion": "发布新版本",
+    "application": "所属应用",
     "versionNumber": "版本号",
     "channel": "发布通道",
     "versionTitle": "版本标题",

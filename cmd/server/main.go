@@ -108,9 +108,11 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 
 	// Initialize handlers
 	authHandler := auth.NewAuthHandler(cfg.App.JWTSecret)
+	applicationHandler := admin.NewApplicationHandler()
 	versionHandler := admin.NewVersionHandler()
 	channelHandler := admin.NewChannelHandler()
 	statsHandler := admin.NewStatsHandler()
+	apiDocsHandler := admin.NewAPIDocsHandler()
 	updateHandler := client.NewUpdateHandler()
 
 	// Auth API routes (public endpoints with rate limiting)
@@ -132,13 +134,38 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		adminV1.GET("/profile", authHandler.GetProfile)
 		adminV1.POST("/change-password", authHandler.ChangePassword)
 
-		// Version management
+		// Application management
+		applications := adminV1.Group("/applications")
+		{
+			applications.GET("", applicationHandler.GetApplications)
+			applications.GET("/:id", applicationHandler.GetApplication)
+			applications.POST("", applicationHandler.CreateApplication)
+			applications.PUT("/:id", applicationHandler.UpdateApplication)
+			applications.DELETE("/:id", applicationHandler.DeleteApplication)
+
+			// Application API keys management
+			applications.GET("/:id/keys", applicationHandler.GetApplicationKeys)
+			applications.POST("/:id/keys", applicationHandler.CreateApplicationKey)
+			applications.PUT("/:id/keys/:keyId", applicationHandler.UpdateApplicationKey)
+			applications.DELETE("/:id/keys/:keyId", applicationHandler.DeleteApplicationKey)
+
+			// Application-specific version management - 使用相同的参数名 :id
+			appVersions := applications.Group("/:id/versions")
+			{
+				appVersions.POST("/upload", versionHandler.CreateVersionWithUpload)
+				appVersions.PUT("/:version_id/upload", versionHandler.UpdateVersionWithUpload)
+			}
+		}
+
+		// Global version management (cross-application)
 		versions := adminV1.Group("/versions")
 		{
 			versions.POST("", versionHandler.CreateVersion)
+			versions.POST("/upload", versionHandler.CreateVersionWithUploadGlobal)
 			versions.GET("", versionHandler.GetVersions)
 			versions.GET("/:id", versionHandler.GetVersion)
 			versions.PUT("/:id", versionHandler.UpdateVersion)
+			versions.PUT("/:id/upload", versionHandler.UpdateVersionWithUploadGlobal)
 			versions.DELETE("/:id", versionHandler.DeleteVersion)
 			versions.POST("/:id/publish", versionHandler.PublishVersion)
 			versions.POST("/:id/unpublish", versionHandler.UnpublishVersion)
@@ -159,6 +186,9 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		adminV1.GET("/stats/distribution", statsHandler.GetVersionDistribution)
 		adminV1.GET("/stats/regions", statsHandler.GetRegionDistribution)
 
+		// API Documentation
+		adminV1.GET("/docs", apiDocsHandler.GetAPIDocs)
+
 		// Admin management (superadmin only)
 		admins := adminV1.Group("/admins")
 		admins.Use(middleware.RequireSuperAdmin()) // Requires superadmin role
@@ -171,17 +201,21 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		}
 	}
 
-	// Client API routes (public with rate limiting)
+	// Client API routes (public with rate limiting and API key authentication)
 	clientV1 := router.Group("/api/v1")
 	clientV1.Use(middleware.RateLimitByType(rateLimiters, "client"))
+	clientV1.Use(middleware.APIKeyAuth()) // Require API key authentication
 	{
-		clientV1.POST("/check-update", updateHandler.CheckUpdate)
-		clientV1.POST("/download-started", updateHandler.DownloadStarted)
-		clientV1.POST("/install-result", updateHandler.InstallResult)
+		clientV1.POST("/check-update", middleware.RequirePermission("check_update"), updateHandler.CheckUpdate)
+		clientV1.POST("/download-started", middleware.RequirePermission("download"), updateHandler.DownloadStarted)
+		clientV1.POST("/install-result", middleware.RequirePermission("install"), updateHandler.InstallResult)
 	}
 
 	// Serve static files for admin frontend (public access)
 	router.Static("/admin-ui", "./web/admin")
+
+	// Serve uploaded files (public access for download)
+	router.Static("/uploads", "./uploads")
 
 	// SPA fallback for admin frontend - handle all sub-routes
 	router.NoRoute(func(c *gin.Context) {

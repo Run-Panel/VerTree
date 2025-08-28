@@ -41,7 +41,7 @@ func (s *ChannelService) GetChannelByID(id uint) (*models.Channel, error) {
 	return &channel, nil
 }
 
-// GetChannelByName retrieves a channel by name
+// GetChannelByName retrieves a channel by name (deprecated, use GetChannelByAppAndName for app-scoped channels)
 func (s *ChannelService) GetChannelByName(name string) (*models.Channel, error) {
 	var channel models.Channel
 	if err := s.db.Where("name = ?", name).First(&channel).Error; err != nil {
@@ -53,6 +53,27 @@ func (s *ChannelService) GetChannelByName(name string) (*models.Channel, error) 
 	return &channel, nil
 }
 
+// GetChannelByAppAndName retrieves a channel by app ID and name
+func (s *ChannelService) GetChannelByAppAndName(appID, name string) (*models.Channel, error) {
+	var channel models.Channel
+	if err := s.db.Where("app_id = ? AND name = ?", appID, name).First(&channel).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("channel not found")
+		}
+		return nil, fmt.Errorf("failed to get channel: %w", err)
+	}
+	return &channel, nil
+}
+
+// GetChannelsByApp retrieves all channels for a specific app
+func (s *ChannelService) GetChannelsByApp(appID string) ([]*models.Channel, error) {
+	var channels []*models.Channel
+	if err := s.db.Where("app_id = ?", appID).Order("name").Find(&channels).Error; err != nil {
+		return nil, fmt.Errorf("failed to get channels for app %s: %w", appID, err)
+	}
+	return channels, nil
+}
+
 // UpdateChannel updates an existing channel
 func (s *ChannelService) UpdateChannel(id uint, req *models.ChannelRequest) (*models.Channel, error) {
 	channel, err := s.GetChannelByID(id)
@@ -60,15 +81,16 @@ func (s *ChannelService) UpdateChannel(id uint, req *models.ChannelRequest) (*mo
 		return nil, err
 	}
 
-	// Check if new name conflicts (if changed)
+	// Check if new name conflicts within the same app (if changed)
 	if req.Name != channel.Name {
 		var existingChannel models.Channel
-		if err := s.db.Where("name = ? AND id != ?", req.Name, id).First(&existingChannel).Error; err == nil {
-			return nil, fmt.Errorf("channel name %s already exists", req.Name)
+		if err := s.db.Where("app_id = ? AND name = ? AND id != ?", channel.AppID, req.Name, id).First(&existingChannel).Error; err == nil {
+			return nil, fmt.Errorf("channel name %s already exists in this app", req.Name)
 		}
 	}
 
 	// Update fields
+	channel.AppID = req.AppID
 	channel.Name = req.Name
 	channel.DisplayName = req.DisplayName
 	channel.Description = req.Description
@@ -85,13 +107,14 @@ func (s *ChannelService) UpdateChannel(id uint, req *models.ChannelRequest) (*mo
 
 // CreateChannel creates a new channel
 func (s *ChannelService) CreateChannel(req *models.ChannelRequest) (*models.Channel, error) {
-	// Check if channel name already exists
+	// Check if channel name already exists in this app
 	var existingChannel models.Channel
-	if err := s.db.Where("name = ?", req.Name).First(&existingChannel).Error; err == nil {
-		return nil, fmt.Errorf("channel name %s already exists", req.Name)
+	if err := s.db.Where("app_id = ? AND name = ?", req.AppID, req.Name).First(&existingChannel).Error; err == nil {
+		return nil, fmt.Errorf("channel name %s already exists in this app", req.Name)
 	}
 
 	channel := &models.Channel{
+		AppID:             req.AppID,
 		Name:              req.Name,
 		DisplayName:       req.DisplayName,
 		Description:       req.Description,
@@ -116,7 +139,7 @@ func (s *ChannelService) DeleteChannel(id uint) error {
 
 	// Check if channel has any versions
 	var versionCount int64
-	if err := s.db.Model(&models.Version{}).Where("channel = ?", channel.Name).Count(&versionCount).Error; err != nil {
+	if err := s.db.Model(&models.Version{}).Where("app_id = ? AND channel = ?", channel.AppID, channel.Name).Count(&versionCount).Error; err != nil {
 		return fmt.Errorf("failed to check version count: %w", err)
 	}
 

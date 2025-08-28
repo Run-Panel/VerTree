@@ -23,19 +23,20 @@ func NewVersionService() *VersionService {
 
 // CreateVersion creates a new version
 func (s *VersionService) CreateVersion(req *models.VersionRequest) (*models.Version, error) {
-	// Check if version already exists
+	// Check if version already exists for this app
 	var existingVersion models.Version
-	if err := s.db.Where("version = ?", req.Version).First(&existingVersion).Error; err == nil {
-		return nil, fmt.Errorf("version %s already exists", req.Version)
+	if err := s.db.Where("app_id = ? AND version = ?", req.AppID, req.Version).First(&existingVersion).Error; err == nil {
+		return nil, fmt.Errorf("version %s already exists for this app", req.Version)
 	}
 
-	// Validate channel exists
+	// Validate channel exists for this app
 	var channel models.Channel
-	if err := s.db.Where("name = ? AND is_active = ?", req.Channel, true).First(&channel).Error; err != nil {
-		return nil, fmt.Errorf("invalid or inactive channel: %s", req.Channel)
+	if err := s.db.Where("app_id = ? AND name = ? AND is_active = ?", req.AppID, req.Channel, true).First(&channel).Error; err != nil {
+		return nil, fmt.Errorf("invalid or inactive channel %s for app %s", req.Channel, req.AppID)
 	}
 
 	version := &models.Version{
+		AppID:             req.AppID,
 		Version:           req.Version,
 		Channel:           req.Channel,
 		Title:             req.Title,
@@ -202,7 +203,7 @@ func (s *VersionService) ListVersions(channel string, page, limit int) ([]*model
 	return versions, total, nil
 }
 
-// GetLatestVersion gets the latest published version for a channel
+// GetLatestVersion gets the latest published version for a channel (deprecated, use GetLatestVersionForApp)
 func (s *VersionService) GetLatestVersion(channel string) (*models.Version, error) {
 	var version models.Version
 	err := s.db.Where("channel = ? AND is_published = ?", channel, true).
@@ -212,6 +213,23 @@ func (s *VersionService) GetLatestVersion(channel string) (*models.Version, erro
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("no published version found for channel %s", channel)
+		}
+		return nil, fmt.Errorf("failed to get latest version: %w", err)
+	}
+
+	return &version, nil
+}
+
+// GetLatestVersionForApp gets the latest published version for a specific app and channel
+func (s *VersionService) GetLatestVersionForApp(appID, channel string) (*models.Version, error) {
+	var version models.Version
+	err := s.db.Where("app_id = ? AND channel = ? AND is_published = ?", appID, channel, true).
+		Order("publish_time DESC").
+		First(&version).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("no published version found for app %s channel %s", appID, channel)
 		}
 		return nil, fmt.Errorf("failed to get latest version: %w", err)
 	}

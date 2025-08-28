@@ -25,7 +25,7 @@ func NewChannelHandler() *ChannelHandler {
 func (h *ChannelHandler) GetChannels(c *gin.Context) {
 	channels, err := h.channelService.GetAllChannels()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.InternalErrorResponse("Failed to get channels", err))
+		c.JSON(http.StatusInternalServerError, models.InternalServerErrorResponse("Failed to get channels", err))
 		return
 	}
 

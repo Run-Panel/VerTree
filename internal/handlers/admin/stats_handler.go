@@ -41,7 +41,7 @@ func (h *StatsHandler) GetStats(c *gin.Context) {
 
 	stats, err := h.statsService.GetStats(&req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.InternalErrorResponse("Failed to get statistics", err))
+		c.JSON(http.StatusInternalServerError, models.InternalServerErrorResponse("Failed to get statistics", err))
 		return
 	}
 
@@ -61,7 +61,7 @@ func (h *StatsHandler) GetVersionDistribution(c *gin.Context) {
 
 	distribution, err := h.statsService.GetVersionDistribution(period)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.InternalErrorResponse("Failed to get version distribution", err))
+		c.JSON(http.StatusInternalServerError, models.InternalServerErrorResponse("Failed to get version distribution", err))
 		return
 	}
 
@@ -81,7 +81,7 @@ func (h *StatsHandler) GetRegionDistribution(c *gin.Context) {
 
 	distribution, err := h.statsService.GetRegionDistribution(period)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.InternalErrorResponse("Failed to get region distribution", err))
+		c.JSON(http.StatusInternalServerError, models.InternalServerErrorResponse("Failed to get region distribution", err))
 		return
 	}
 

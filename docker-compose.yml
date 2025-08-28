@@ -13,7 +13,7 @@ services:
       - DB_PORT=5432
       - DB_USER=updateservice
       - DB_PASSWORD=updateservice_password
-      - DB_NAME=update_service
+      - DB_NAME=vertree
       - DB_SSLMODE=disable
       - ENVIRONMENT=production
       - REGION=${REGION:-global}

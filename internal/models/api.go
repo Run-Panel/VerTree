@@ -33,6 +33,7 @@ type PaginatedResponse struct {
 
 // CheckUpdateRequest represents the client update check request
 type CheckUpdateRequest struct {
+	AppID          string `json:"app_id" validate:"required"` // Required for app-scoped updates
 	CurrentVersion string `json:"current_version" validate:"required"`
 	Channel        string `json:"channel" validate:"required,oneof=stable beta alpha"`
 	ClientID       string `json:"client_id" validate:"required"`
@@ -63,12 +64,12 @@ type StatsRequest struct {
 
 // StatsResponse represents the statistics response
 type StatsResponse struct {
-	TotalUsers          int64            `json:"total_users"`
-	TotalDownloads      int64            `json:"total_downloads"`
-	SuccessRate         float64          `json:"success_rate"`
-	VersionDistribution map[string]int64 `json:"version_distribution"`
-	RegionDistribution  map[string]int64 `json:"region_distribution"`
-	DailyStats          []DailyStat      `json:"daily_stats"`
+	TotalUsers          int64            `json:"totalUsers"`
+	TotalDownloads      int64            `json:"totalDownloads"`
+	SuccessRate         float64          `json:"successRate"`
+	VersionDistribution map[string]int64 `json:"versionDistribution"`
+	RegionDistribution  map[string]int64 `json:"regionDistribution"`
+	DailyStats          []DailyStat      `json:"dailyStats"`
 }
 
 // DailyStat represents daily statistics
@@ -126,9 +127,19 @@ func NotFoundResponse(message string) *ErrorResponse {
 	return ErrorResponseWithCode(404, message, nil)
 }
 
-// InternalErrorResponse creates an internal server error response
-func InternalErrorResponse(message string, err error) *ErrorResponse {
+// InternalServerErrorResponse creates an internal server error response
+func InternalServerErrorResponse(message string, err error) *ErrorResponse {
 	return ErrorResponseWithCode(500, message, err)
+}
+
+// UnauthorizedResponse creates an unauthorized error response
+func UnauthorizedResponse(message string) *ErrorResponse {
+	return ErrorResponseWithCode(401, message, nil)
+}
+
+// ForbiddenResponse creates a forbidden error response
+func ForbiddenResponse(message string) *ErrorResponse {
+	return ErrorResponseWithCode(403, message, nil)
 }
 
 // ErrorResponseWithCodeAndError creates a generic error response with code, message and error code

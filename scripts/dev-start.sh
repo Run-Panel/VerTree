@@ -71,7 +71,8 @@ if curl -sf http://localhost:8080/health > /dev/null 2>&1; then
     echo -e "${YELLOW}💡 提示:${NC}"
     echo -e "   - 使用 ${BLUE}./scripts/dev-stop.sh${NC} 停止所有服务"
     echo -e "   - 日志文件保存在 logs/ 目录中"
-    echo -e "   - 数据库文件: ./data/runpanel_updates.db"
+
+    echo -e "   - 数据库文件: ./data/vertree.db"
     echo ""
     
     # 保存PID到文件，方便停止脚本使用

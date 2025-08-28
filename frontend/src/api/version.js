@@ -58,3 +58,27 @@ export function unpublishVersion(id) {
     method: 'post'
   })
 }
+
+// Create version with file upload
+export function createVersionWithFile(formData) {
+  return request({
+    url: '/versions/upload',
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+// Update version with file upload
+export function updateVersionWithFile(id, formData) {
+  return request({
+    url: `/versions/${id}/upload`,
+    method: 'put',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}

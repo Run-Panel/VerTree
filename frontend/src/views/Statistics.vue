@@ -121,29 +121,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { LineChart, PieChart, BarChart } from 'echarts/charts'
-import {
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent
-} from 'echarts/components'
-import VChart, { THEME_KEY } from 'vue-echarts'
 import { ElMessage } from 'element-plus'
 import { getStats } from '@/api/stats'
-
-use([
-  CanvasRenderer,
-  LineChart,
-  PieChart,
-  BarChart,
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent
-])
 
 const { t } = useI18n()
 const loading = ref(false)
