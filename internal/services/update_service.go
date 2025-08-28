@@ -5,6 +5,7 @@ import (
 
 	"github.com/Run-Panel/VerTree/internal/database"
 	"github.com/Run-Panel/VerTree/internal/models"
+	"github.com/Run-Panel/VerTree/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +15,7 @@ type UpdateService struct {
 	versionSvc *VersionService
 	channelSvc *ChannelService
 	statsSvc   *StatsService
+	versionCmp *utils.VersionComparer
 }
 
 // NewUpdateService creates a new update service instance
@@ -23,6 +25,7 @@ func NewUpdateService() *UpdateService {
 		versionSvc: NewVersionService(),
 		channelSvc: NewChannelService(),
 		statsSvc:   NewStatsService(),
+		versionCmp: utils.NewVersionComparer(),
 	}
 }
 
@@ -111,22 +114,14 @@ func (s *UpdateService) CheckUpdate(req *models.CheckUpdateRequest, clientIP str
 	return response, nil
 }
 
-// isUpdateNeeded checks if an update is needed based on version comparison
+// isUpdateNeeded checks if an update is needed based on semantic version comparison
 func (s *UpdateService) isUpdateNeeded(currentVersion, latestVersion string) bool {
-	// Simple version comparison - in production you might want to use semver
-	return currentVersion != latestVersion
+	return s.versionCmp.IsUpdateNeeded(currentVersion, latestVersion)
 }
 
 // meetsMinimumVersion checks if the current version meets the minimum upgrade version
 func (s *UpdateService) meetsMinimumVersion(currentVersion, minVersion string) bool {
-	// Simple version comparison - in production you might want to use semver
-	// For now, just check if they're not empty and different
-	if minVersion == "" {
-		return true
-	}
-
-	// This is a simplified comparison - you should implement proper semver comparison
-	return currentVersion >= minVersion
+	return s.versionCmp.MeetsMinimumVersion(currentVersion, minVersion)
 }
 
 // shouldReceiveUpdate checks if the client should receive the update based on rollout rules

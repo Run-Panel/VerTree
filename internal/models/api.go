@@ -64,12 +64,12 @@ type StatsRequest struct {
 
 // StatsResponse represents the statistics response
 type StatsResponse struct {
-	TotalUsers          int64            `json:"totalUsers"`
-	TotalDownloads      int64            `json:"totalDownloads"`
-	SuccessRate         float64          `json:"successRate"`
-	VersionDistribution map[string]int64 `json:"versionDistribution"`
-	RegionDistribution  map[string]int64 `json:"regionDistribution"`
-	DailyStats          []DailyStat      `json:"dailyStats"`
+	TotalUsers          int64            `json:"total_users"`
+	TotalDownloads      int64            `json:"total_downloads"`
+	SuccessRate         float64          `json:"success_rate"`
+	VersionDistribution map[string]int64 `json:"version_distribution"`
+	RegionDistribution  map[string]int64 `json:"region_distribution"`
+	DailyStats          []DailyStat      `json:"daily_stats"`
 }
 
 // DailyStat represents daily statistics

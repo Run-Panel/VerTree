@@ -24,12 +24,12 @@
               <el-icon size="24"><User /></el-icon>
             </div>
             <div class="content">
-              <div class="value">{{ formatNumber(stats.totalUsers || 0) }}</div>
+              <div class="value">{{ formatNumber(stats.total_users || 0) }}</div>
               <div class="label">{{ $t('stats.totalUsers') }}</div>
             </div>
-            <div class="trend" v-if="getTrendData(stats.totalUsers || 0, 'users').show">
-              <el-icon :color="getTrendData(stats.totalUsers || 0, 'users').color"><TrendCharts /></el-icon>
-              <span class="trend-text">{{ getTrendData(stats.totalUsers || 0, 'users').text }}</span>
+            <div class="trend" v-if="getTrendData(stats.total_users || 0, 'users').show">
+              <el-icon :color="getTrendData(stats.total_users || 0, 'users').color"><TrendCharts /></el-icon>
+              <span class="trend-text">{{ getTrendData(stats.total_users || 0, 'users').text }}</span>
             </div>
           </div>
         </el-col>
@@ -40,12 +40,12 @@
               <el-icon size="24"><Download /></el-icon>
             </div>
             <div class="content">
-              <div class="value">{{ formatNumber(stats.totalDownloads || 0) }}</div>
+              <div class="value">{{ formatNumber(stats.total_downloads || 0) }}</div>
               <div class="label">{{ $t('stats.totalDownloads') }}</div>
             </div>
-            <div class="trend" v-if="getTrendData(stats.totalDownloads || 0, 'downloads').show">
-              <el-icon :color="getTrendData(stats.totalDownloads || 0, 'downloads').color"><TrendCharts /></el-icon>
-              <span class="trend-text">{{ getTrendData(stats.totalDownloads || 0, 'downloads').text }}</span>
+            <div class="trend" v-if="getTrendData(stats.total_downloads || 0, 'downloads').show">
+              <el-icon :color="getTrendData(stats.total_downloads || 0, 'downloads').color"><TrendCharts /></el-icon>
+              <span class="trend-text">{{ getTrendData(stats.total_downloads || 0, 'downloads').text }}</span>
             </div>
           </div>
         </el-col>
@@ -56,12 +56,12 @@
               <el-icon size="24"><TrendCharts /></el-icon>
             </div>
             <div class="content">
-              <div class="value">{{ (stats.successRate || 0).toFixed(1) }}%</div>
+              <div class="value">{{ (stats.success_rate || 0).toFixed(1) }}%</div>
               <div class="label">{{ $t('stats.successRate') }}</div>
             </div>
-            <div class="trend" v-if="getTrendData(stats.successRate || 0, 'successRate').show">
-              <el-icon :color="getTrendData(stats.successRate || 0, 'successRate').color"><TrendCharts /></el-icon>
-              <span class="trend-text">{{ getTrendData(stats.successRate || 0, 'successRate').text }}</span>
+            <div class="trend" v-if="getTrendData(stats.success_rate || 0, 'successRate').show">
+              <el-icon :color="getTrendData(stats.success_rate || 0, 'successRate').color"><TrendCharts /></el-icon>
+              <span class="trend-text">{{ getTrendData(stats.success_rate || 0, 'successRate').text }}</span>
             </div>
           </div>
         </el-col>
@@ -352,7 +352,7 @@ const getChannelTagType = (channel) => {
 
 const getAdoptionRate = (version) => {
   // Mock adoption rate calculation based on version and stats
-  const versionStats = stats.value.versionDistribution || {}
+  const versionStats = stats.value.version_distribution || {}
   const total = Object.values(versionStats).reduce((sum, count) => sum + count, 0)
   const versionCount = versionStats[version] || 0
   return total > 0 ? Math.round((versionCount / total) * 100) : Math.floor(Math.random() * 100)

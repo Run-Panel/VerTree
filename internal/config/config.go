@@ -67,7 +67,7 @@ func Load() *Config {
 			Region:      getEnv("REGION", "global"),
 			Domain:      getEnv("DOMAIN", "localhost"),
 			UploadPath:  getEnv("UPLOAD_PATH", "./uploads"),
-			JWTSecret:   getEnv("JWT_SECRET", "your-super-secret-jwt-key-change-this-in-production"),
+			JWTSecret:   getEnv("JWT_SECRET", "fed9219b65a21a3357d5927873d966d63cac9a2e86e44c6001b447a01c3bb96b"),
 		},
 	}
 
