@@ -44,10 +44,13 @@
         <h3>API Key获取方式</h3>
         <ol>
           <li>登录管理后台，进入 <router-link to="/applications">应用管理</router-link></li>
-          <li>创建或选择一个应用</li>
-          <li>点击"密钥"按钮，创建新的API密钥</li>
-          <li>设置密钥权限：<code>check_update</code>, <code>download</code>, <code>install</code></li>
-          <li>复制生成的App ID和API Key用于客户端集成</li>
+          <li>创建或选择一个应用（获得App ID）</li>
+          <li>在应用详情页点击"密钥管理"或"API Keys"</li>
+          <li>点击"创建新密钥"，设置密钥名称</li>
+          <li><strong>重要：</strong>设置密钥权限：<code>check_update</code>, <code>download</code>, <code>install</code></li>
+          <li>保存后，系统会生成密钥并显示完整的API密钥（仅显示一次）</li>
+          <li>记录下App ID（如：app_1234567890）和API密钥（如：sk_test_abcdef123456）</li>
+          <li>在客户端中使用格式：<code>Authorization: Bearer app_id:api_key</code></li>
         </ol>
       </div>
     </el-card>
@@ -71,6 +74,11 @@
             
             <h4>权限要求</h4>
             <p><code>check_update</code> - 在创建API密钥时需要勾选此权限</p>
+            
+            <div class="warning-note">
+              <h4>⚠️ 重要提醒</h4>
+              <p><strong>app_id参数是必须的！</strong>此参数用于标识应用身份，确保只能访问对应应用的版本信息。请确保请求中包含正确的app_id。</p>
+            </div>
             
             <h4>请求参数</h4>
             <el-table :data="checkUpdateParams" class="params-table">
@@ -478,6 +486,7 @@ const adminApiBaseUrl = computed(() => {
 
 // 检查更新API参数 (修正后的参数)
 const checkUpdateParams = [
+  { name: 'app_id', type: 'string', required: true, description: '应用ID，从管理后台获取，如 "app_1234567890"' },
   { name: 'current_version', type: 'string', required: true, description: '当前版本号，如 "v1.2.3"' },
   { name: 'channel', type: 'string', required: true, description: '更新通道：stable, beta, alpha' },
   { name: 'client_id', type: 'string', required: true, description: '客户端唯一标识，用于统计' },
@@ -505,6 +514,7 @@ const checkUpdateExample = `curl -X POST "${window.location.protocol}//${window.
   -H "Authorization: Bearer app_1234567890:sk_test_abcdef123456" \\
   -H "Content-Type: application/json" \\
   -d '{
+    "app_id": "app_1234567890",
     "current_version": "v1.2.3",
     "channel": "stable",
     "client_id": "client_unique_id_12345",
@@ -565,6 +575,7 @@ class VerTreeClient {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        app_id: this.appId,
         current_version: currentVersion,
         channel: channel,
         client_id: options.clientId || this.generateClientId(),
@@ -662,6 +673,7 @@ class VerTreeClient:
             client_id = str(uuid.uuid4())
             
         data = {
+            'app_id': self.app_id,
             'current_version': current_version,
             'channel': channel,
             'client_id': client_id,
@@ -756,6 +768,7 @@ type VerTreeClient struct {
 }
 
 type UpdateRequest struct {
+    AppID          string \`json:"app_id"\`
     CurrentVersion string \`json:"current_version"\`
     Channel        string \`json:"channel"\`
     ClientID       string \`json:"client_id"\`
@@ -872,6 +885,7 @@ func main() {
     clientID := uuid.New().String()
 
     updateInfo, err := client.CheckUpdate(UpdateRequest{
+        AppID:          "app_1234567890",
         CurrentVersion: "v1.2.3",
         Channel:        "stable",
         ClientID:       clientID,
@@ -902,6 +916,7 @@ curl -X POST "${window.location.protocol}//${window.location.host}/api/v1/check-
   -H "Authorization: Bearer app_1234567890:sk_test_abcdef123456" \\
   -H "Content-Type: application/json" \\
   -d '{
+    "app_id": "app_1234567890",
     "current_version": "v1.2.3",
     "channel": "stable",
     "client_id": "client_unique_id_12345",
@@ -1038,6 +1053,24 @@ const errorCodes = [
 .security-note h4 {
   color: #0369a1;
   margin: 0 0 8px 0;
+}
+
+.warning-note {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.warning-note h4 {
+  color: #d97706;
+  margin: 0 0 8px 0;
+}
+
+.warning-note p {
+  margin: 0;
+  color: #92400e;
 }
 
 .code-card {
