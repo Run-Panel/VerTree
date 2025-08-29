@@ -2,6 +2,7 @@ package client
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Run-Panel/VerTree/internal/models"
 	"github.com/Run-Panel/VerTree/internal/services"
@@ -10,13 +11,15 @@ import (
 
 // UpdateHandler handles client update endpoints
 type UpdateHandler struct {
-	updateService *services.UpdateService
+	updateService  *services.UpdateService
+	versionService *services.VersionService
 }
 
 // NewUpdateHandler creates a new update handler
 func NewUpdateHandler() *UpdateHandler {
 	return &UpdateHandler{
-		updateService: services.NewUpdateService(),
+		updateService:  services.NewUpdateService(),
+		versionService: services.NewVersionService(),
 	}
 }
 
@@ -95,4 +98,59 @@ func (h *UpdateHandler) InstallResult(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.SuccessResponse(map[string]string{"message": "Install result recorded"}))
+}
+
+// GetVersions handles GET /api/v1/versions
+func (h *UpdateHandler) GetVersions(c *gin.Context) {
+	// Get app_id from middleware (set by API key authentication)
+	appID, exists := c.Get("app_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, models.UnauthorizedResponse("Application ID not found"))
+		return
+	}
+
+	// Parse query parameters
+	channel := c.Query("channel")
+	limitStr := c.DefaultQuery("limit", "10")
+	publishedOnlyStr := c.DefaultQuery("published_only", "true")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	publishedOnly := publishedOnlyStr != "false" // Default to true unless explicitly false
+
+	// Get versions for this app
+	versions, err := h.versionService.GetVersionsForApp(appID.(string), channel, limit, publishedOnly)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.InternalServerErrorResponse("Failed to get versions", err))
+		return
+	}
+
+	// Convert to client response format (simplified, without admin-only fields)
+	var versionResponses []map[string]interface{}
+	for _, version := range versions {
+		versionResponse := map[string]interface{}{
+			"version":             version.Version,
+			"channel":             version.Channel,
+			"title":               version.Title,
+			"description":         version.Description,
+			"release_notes":       version.ReleaseNotes,
+			"download_url":        version.FileURL,
+			"file_size":           version.FileSize,
+			"file_checksum":       version.FileChecksum,
+			"is_forced":           version.IsForced,
+			"min_upgrade_version": version.MinUpgradeVersion,
+		}
+
+		// Add published_at only if published
+		if version.IsPublished && version.PublishTime != nil {
+			versionResponse["published_at"] = version.PublishTime
+		}
+
+		versionResponses = append(versionResponses, versionResponse)
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse(versionResponses))
 }

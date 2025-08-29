@@ -171,6 +171,49 @@
             </el-card>
           </div>
         </el-collapse-item>
+
+        <!-- 版本列表 API -->
+        <el-collapse-item title="获取版本列表" name="get-versions">
+          <div class="api-section">
+            <div class="api-header">
+              <span class="method get">GET</span>
+              <code class="endpoint">/api/v1/versions</code>
+              <span class="description">获取应用的版本历史列表</span>
+            </div>
+            
+            <h4>权限要求</h4>
+            <p><code>check_update</code> - 复用更新检查权限</p>
+            
+            <div class="warning-note">
+              <h4>🎯 应用场景</h4>
+              <p>此接口适用于：版本回退、历史展示、灵活更新策略、开发调试等场景。让客户端有更多版本选择权。</p>
+            </div>
+            
+            <h4>查询参数</h4>
+            <el-table :data="getVersionsParams" class="params-table">
+              <el-table-column prop="name" label="参数名" width="180" />
+              <el-table-column prop="type" label="类型" width="100" />
+              <el-table-column prop="required" label="必须" width="80">
+                <template #default="{ row }">
+                  <el-tag :type="row.required ? 'danger' : 'info'" size="small">
+                    {{ row.required ? '是' : '否' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="description" label="说明" />
+            </el-table>
+
+            <h4>请求示例</h4>
+            <el-card class="code-card">
+              <pre><code>{{ getVersionsExample }}</code></pre>
+            </el-card>
+
+            <h4>响应示例</h4>
+            <el-card class="code-card">
+              <pre><code>{{ getVersionsResponse }}</code></pre>
+            </el-card>
+          </div>
+        </el-collapse-item>
       </el-collapse>
     </el-card>
 
@@ -509,6 +552,13 @@ const installResultParams = [
   { name: 'error_message', type: 'string', required: false, description: '错误信息（当success为false时）' }
 ]
 
+// 获取版本列表API参数
+const getVersionsParams = [
+  { name: 'channel', type: 'string', required: false, description: '通道过滤：stable, beta, alpha。不指定则返回所有通道' },
+  { name: 'limit', type: 'number', required: false, description: '返回数量限制，默认10，最大50' },
+  { name: 'published_only', type: 'boolean', required: false, description: '只返回已发布版本，默认true' }
+]
+
 // API示例 (修正后的示例)
 const checkUpdateExample = `curl -X POST "${window.location.protocol}//${window.location.host}/api/v1/check-update" \\
   -H "Authorization: Bearer app_1234567890:sk_test_abcdef123456" \\
@@ -556,6 +606,51 @@ const installResultExample = `curl -X POST "${window.location.protocol}//${windo
     "client_id": "client_unique_id_12345",
     "success": true
   }'`
+
+const getVersionsExample = `# 获取所有已发布版本（默认）
+curl -X GET "${window.location.protocol}//${window.location.host}/api/v1/versions" \\
+  -H "Authorization: Bearer app_1234567890:sk_test_abcdef123456"
+
+# 获取stable通道的最近5个版本
+curl -X GET "${window.location.protocol}//${window.location.host}/api/v1/versions?channel=stable&limit=5" \\
+  -H "Authorization: Bearer app_1234567890:sk_test_abcdef123456"
+
+# 获取所有版本（包括未发布）
+curl -X GET "${window.location.protocol}//${window.location.host}/api/v1/versions?published_only=false&limit=20" \\
+  -H "Authorization: Bearer app_1234567890:sk_test_abcdef123456"`
+
+const getVersionsResponse = `{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "version": "v1.3.0",
+      "channel": "stable",
+      "title": "稳定版本 v1.3.0",
+      "description": "修复重要问题，提升性能",
+      "release_notes": "新增功能:\\n- 支持自动更新\\n- 修复已知问题\\n- 性能优化",
+      "download_url": "${window.location.protocol}//${window.location.host}/uploads/versions/app_v1.3.0.zip",
+      "file_size": 52428800,
+      "file_checksum": "sha256:abc123def456...",
+      "is_forced": false,
+      "min_upgrade_version": "v1.0.0",
+      "published_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "version": "v1.2.5",
+      "channel": "stable",
+      "title": "稳定版本 v1.2.5",
+      "description": "安全更新和bug修复",
+      "release_notes": "修复:\\n- 安全漏洞修复\\n- 稳定性提升",
+      "download_url": "${window.location.protocol}//${window.location.host}/uploads/versions/app_v1.2.5.zip",
+      "file_size": 51200000,
+      "file_checksum": "sha256:def789abc123...",
+      "is_forced": false,
+      "min_upgrade_version": "v1.0.0",
+      "published_at": "2024-01-10T14:20:00Z"
+    }
+  ]
+}`
 
 // SDK 示例
 const javascriptSDK = `// VerTree JavaScript SDK 示例
@@ -619,6 +714,25 @@ class VerTreeClient {
     });
   }
 
+  async getVersions(options = {}) {
+    const params = new URLSearchParams();
+    if (options.channel) params.append('channel', options.channel);
+    if (options.limit) params.append('limit', options.limit.toString());
+    if (options.publishedOnly !== undefined) params.append('published_only', options.publishedOnly.toString());
+    
+    const url = \`\${this.baseUrl}/versions\` + (params.toString() ? \`?\${params.toString()}\` : '');
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': this.authHeader
+      }
+    });
+    
+    const result = await response.json();
+    return result.data;
+  }
+
   generateClientId() {
     return 'client_' + Math.random().toString(36).substr(2, 9);
   }
@@ -649,6 +763,28 @@ async function checkForUpdates() {
     }
   } catch (error) {
     console.error('检查更新失败:', error);
+  }
+}
+
+async function showVersionHistory() {
+  try {
+    // 获取stable通道的最近10个版本
+    const versions = await client.getVersions({
+      channel: 'stable',
+      limit: 10,
+      publishedOnly: true
+    });
+    
+    console.log('版本历史:', versions);
+    
+    // 展示版本列表供用户选择
+    versions.forEach(version => {
+      console.log(\`\${version.version} - \${version.title}\`);
+      console.log(\`  发布时间: \${version.published_at}\`);
+      console.log(\`  文件大小: \${(version.file_size / 1024 / 1024).toFixed(2)} MB\`);
+    });
+  } catch (error) {
+    console.error('获取版本历史失败:', error);
   }
 }`
 
@@ -923,6 +1059,10 @@ curl -X POST "${window.location.protocol}//${window.location.host}/api/v1/check-
     "region": "CN",
     "os": "linux"
   }'
+
+# 获取版本列表
+curl -X GET "${window.location.protocol}//${window.location.host}/api/v1/versions?channel=stable&limit=5" \\
+  -H "Authorization: Bearer app_1234567890:sk_test_abcdef123456"
 
 # 报告下载开始
 curl -X POST "${window.location.protocol}//${window.location.host}/api/v1/download-started" \\

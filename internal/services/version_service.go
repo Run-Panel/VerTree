@@ -267,3 +267,40 @@ func (s *VersionService) GetLatestVersionForApp(appID, channel string) (*models.
 
 	return &version, nil
 }
+
+// GetVersionsForApp gets published versions for a specific app with optional channel filter
+func (s *VersionService) GetVersionsForApp(appID, channel string, limit int, publishedOnly bool) ([]*models.Version, error) {
+	var versions []*models.Version
+
+	query := s.db.Where("app_id = ?", appID)
+
+	// Apply channel filter if provided
+	if channel != "" {
+		query = query.Where("channel = ?", channel)
+	}
+
+	// Apply published filter
+	if publishedOnly {
+		query = query.Where("is_published = ?", true)
+	}
+
+	// Apply limit (default 10, max 50)
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 50 {
+		limit = 50
+	}
+
+	// Order by publish_time (or created_at for unpublished) DESC and apply limit
+	orderBy := "publish_time DESC"
+	if !publishedOnly {
+		orderBy = "COALESCE(publish_time, created_at) DESC"
+	}
+
+	if err := query.Order(orderBy).Limit(limit).Find(&versions).Error; err != nil {
+		return nil, fmt.Errorf("failed to get versions for app: %w", err)
+	}
+
+	return versions, nil
+}

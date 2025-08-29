@@ -210,6 +210,7 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		clientV1.POST("/check-update", middleware.RequirePermission("check_update"), updateHandler.CheckUpdate)
 		clientV1.POST("/download-started", middleware.RequirePermission("download"), updateHandler.DownloadStarted)
 		clientV1.POST("/install-result", middleware.RequirePermission("install"), updateHandler.InstallResult)
+		clientV1.GET("/versions", middleware.RequirePermission("check_update"), updateHandler.GetVersions)
 	}
 
 	// Serve static files for admin frontend (public access)
