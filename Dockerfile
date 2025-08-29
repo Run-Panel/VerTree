@@ -9,7 +9,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Build stage for backend
-FROM golang:1.21-alpine AS backend-builder
+FROM golang:1.23-alpine AS backend-builder
 
 # Install build dependencies
 RUN apk add --no-cache git gcc musl-dev
@@ -37,7 +37,7 @@ WORKDIR /root/
 COPY --from=backend-builder /app/main .
 
 # Copy the frontend build from frontend-builder
-COPY --from=frontend-builder /app/frontend/dist ./web/admin
+COPY --from=frontend-builder /app/web/admin ./web/admin
 
 # Create uploads directory
 RUN mkdir -p uploads

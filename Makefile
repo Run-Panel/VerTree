@@ -1,17 +1,24 @@
-.PHONY: help build run dev test clean docker docker-dev migrate
+.PHONY: help build run dev test clean docker docker-postgres docker-dev docker-stop docker-stop-sqlite docker-stop-postgres logs logs-postgres logs-dev migrate frontend
 
 # Default target
 help:
 	@echo "RunPanel Update Service - Available commands:"
-	@echo "  make build       - Build the Go application"
-	@echo "  make run         - Run the application locally"
-	@echo "  make dev         - Run in development mode with hot reload"
-	@echo "  make test        - Run tests"
-	@echo "  make clean       - Clean build artifacts"
-	@echo "  make docker      - Build and run with Docker Compose (production)"
-	@echo "  make docker-dev  - Build and run with Docker Compose (development)"
-	@echo "  make migrate     - Run database migrations"
-	@echo "  make frontend    - Build frontend"
+	@echo "  make build              - Build the Go application"
+	@echo "  make run                - Run the application locally"
+	@echo "  make dev                - Run in development mode with hot reload"
+	@echo "  make test               - Run tests"
+	@echo "  make clean              - Clean build artifacts"
+	@echo "  make docker             - Build and run with Docker Compose (SQLite)"
+	@echo "  make docker-postgres    - Build and run with Docker Compose (PostgreSQL)"
+	@echo "  make docker-dev         - Build and run with Docker Compose (development)"
+	@echo "  make docker-stop        - Stop all Docker services"
+	@echo "  make docker-stop-sqlite - Stop SQLite Docker services"
+	@echo "  make docker-stop-postgres - Stop PostgreSQL Docker services"
+	@echo "  make logs               - View SQLite container logs"
+	@echo "  make logs-postgres      - View PostgreSQL container logs"
+	@echo "  make logs-dev           - View development container logs"
+	@echo "  make migrate            - Run database migrations"
+	@echo "  make frontend           - Build frontend"
 
 # Build the Go application
 build:
@@ -46,12 +53,19 @@ frontend:
 	@echo "Building frontend..."
 	cd frontend && npm install && npm run build
 
-# Docker production
+# Docker with SQLite (default for development)
 docker:
-	@echo "Building and starting with Docker Compose (production)..."
-	docker-compose down
-	docker-compose build
-	docker-compose up -d
+	@echo "Building and starting with Docker Compose (SQLite)..."
+	docker-compose -f docker-compose.sqlite.yml down
+	docker-compose -f docker-compose.sqlite.yml build
+	docker-compose -f docker-compose.sqlite.yml up -d
+
+# Docker with PostgreSQL (production)
+docker-postgres:
+	@echo "Building and starting with Docker Compose (PostgreSQL)..."
+	docker-compose -f docker-compose.postgres.yml down
+	docker-compose -f docker-compose.postgres.yml build
+	docker-compose -f docker-compose.postgres.yml up -d
 
 # Docker development
 docker-dev:
@@ -68,12 +82,27 @@ migrate:
 # Stop Docker services
 docker-stop:
 	@echo "Stopping Docker services..."
-	docker-compose down
+	docker-compose -f docker-compose.sqlite.yml down
+	docker-compose -f docker-compose.postgres.yml down
 	docker-compose -f docker-compose.dev.yml down
 
-# View logs
+# Stop SQLite Docker services
+docker-stop-sqlite:
+	@echo "Stopping SQLite Docker services..."
+	docker-compose -f docker-compose.sqlite.yml down
+
+# Stop PostgreSQL Docker services
+docker-stop-postgres:
+	@echo "Stopping PostgreSQL Docker services..."
+	docker-compose -f docker-compose.postgres.yml down
+
+# View logs (SQLite version)
 logs:
-	docker-compose logs -f update-service
+	docker-compose -f docker-compose.sqlite.yml logs -f vertree-app
+
+# View PostgreSQL logs
+logs-postgres:
+	docker-compose -f docker-compose.postgres.yml logs -f update-service
 
 # View development logs
 logs-dev:
