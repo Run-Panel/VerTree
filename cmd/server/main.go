@@ -35,11 +35,6 @@ func main() {
 	}
 	defer database.Close()
 
-	// Run database migrations
-	if err := database.AutoMigrate(); err != nil {
-		log.Fatalf("Failed to run database migrations: %v", err)
-	}
-
 	// Seed default data
 	if err := database.SeedDefaultData(); err != nil {
 		log.Fatalf("Failed to seed default data: %v", err)
