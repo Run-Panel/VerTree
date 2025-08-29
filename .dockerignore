@@ -1,0 +1,63 @@
+# Ignore common development files
+.git
+.gitignore
+.env*
+*.md
+*.txt
+
+# Ignore logs and temporary files
+logs/
+*.log
+tmp/
+.tmp/
+
+# Ignore development data
+data/
+uploads/*
+!uploads/.gitkeep
+
+# Ignore build artifacts
+dist/
+build/
+target/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore documentation
+docs/
+*.md
+
+# Ignore test files
+test/
+*_test.go
+*.test
+
+# Ignore CI files
+.github/
+.gitlab-ci.yml
+
+# Ignore docker files (to avoid recursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Ignore frontend development files
+frontend/node_modules/
+frontend/dist/
+frontend/.nuxt/
+frontend/.output/
+frontend/.vite/
+frontend/.cache/
+
+# Ignore Go development files
+vendor/
+go.sum.backup
