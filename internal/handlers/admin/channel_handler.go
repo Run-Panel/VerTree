@@ -113,3 +113,90 @@ func (h *ChannelHandler) DeleteChannel(c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.SuccessResponse(map[string]string{"message": "Channel deleted successfully"}))
 }
+
+// GetChannelsByApp handles GET /admin/api/v1/applications/:id/channels
+// Returns enabled channels for the specific application
+func (h *ChannelHandler) GetChannelsByApp(c *gin.Context) {
+	appID := c.Param("id")
+	if appID == "" {
+		c.JSON(http.StatusBadRequest, models.BadRequestResponse("App ID is required", nil))
+		return
+	}
+
+	// Get application-specific channel configurations
+	channels, err := h.channelService.GetChannelsByApp(appID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.InternalServerErrorResponse("Failed to get channels", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse(channels))
+}
+
+// GetAllChannelsForApp handles GET /admin/api/v1/applications/:id/channels/all
+// Returns all channels (enabled and disabled) for the specific application
+func (h *ChannelHandler) GetAllChannelsForApp(c *gin.Context) {
+	appID := c.Param("id")
+	if appID == "" {
+		c.JSON(http.StatusBadRequest, models.BadRequestResponse("App ID is required", nil))
+		return
+	}
+
+	// Get all application-specific channel configurations
+	channels, err := h.channelService.GetAllChannelsForApp(appID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.InternalServerErrorResponse("Failed to get channels", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse(channels))
+}
+
+// EnableChannelForApp handles PUT /admin/api/v1/applications/:id/channels/:channel
+// Enables/configures a channel for a specific application
+func (h *ChannelHandler) EnableChannelForApp(c *gin.Context) {
+	appID := c.Param("id")
+	channelName := c.Param("channel")
+
+	if appID == "" || channelName == "" {
+		c.JSON(http.StatusBadRequest, models.BadRequestResponse("App ID and channel name are required", nil))
+		return
+	}
+
+	var req models.ApplicationChannelRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.BadRequestResponse("Invalid request format", err))
+		return
+	}
+
+	// Set the app ID and channel name from URL params
+	req.AppID = appID
+	req.ChannelName = channelName
+
+	appChannel, err := h.channelService.EnableChannelForApp(appID, channelName, &req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.BadRequestResponse("Failed to configure channel", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse(appChannel))
+}
+
+// DisableChannelForApp handles DELETE /admin/api/v1/applications/:id/channels/:channel
+// Disables a channel for a specific application
+func (h *ChannelHandler) DisableChannelForApp(c *gin.Context) {
+	appID := c.Param("id")
+	channelName := c.Param("channel")
+
+	if appID == "" || channelName == "" {
+		c.JSON(http.StatusBadRequest, models.BadRequestResponse("App ID and channel name are required", nil))
+		return
+	}
+
+	if err := h.channelService.DisableChannelForApp(appID, channelName); err != nil {
+		c.JSON(http.StatusBadRequest, models.BadRequestResponse("Failed to disable channel", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse(map[string]string{"message": "Channel disabled successfully"}))
+}

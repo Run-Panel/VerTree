@@ -35,7 +35,7 @@ type PaginatedResponse struct {
 type CheckUpdateRequest struct {
 	AppID          string `json:"app_id" validate:"required"` // Required for app-scoped updates
 	CurrentVersion string `json:"current_version" validate:"required"`
-	Channel        string `json:"channel" validate:"required,oneof=stable beta alpha"`
+	Channel        string `json:"channel" validate:"required"`
 	ClientID       string `json:"client_id" validate:"required"`
 	Region         string `json:"region"`
 	Arch           string `json:"arch"`

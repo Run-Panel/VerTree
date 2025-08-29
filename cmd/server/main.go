@@ -100,7 +100,7 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
-			"service": "runpanel-update-service",
+			"service": "VerTree-Service",
 			"version": "1.0.0",
 			"region":  cfg.App.Region,
 		})
@@ -148,6 +148,12 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 			applications.POST("/:id/keys", applicationHandler.CreateApplicationKey)
 			applications.PUT("/:id/keys/:keyId", applicationHandler.UpdateApplicationKey)
 			applications.DELETE("/:id/keys/:keyId", applicationHandler.DeleteApplicationKey)
+
+			// Application-specific channel management
+			applications.GET("/:id/channels", channelHandler.GetChannelsByApp)
+			applications.GET("/:id/channels/all", channelHandler.GetAllChannelsForApp)
+			applications.PUT("/:id/channels/:channel", channelHandler.EnableChannelForApp)
+			applications.DELETE("/:id/channels/:channel", channelHandler.DisableChannelForApp)
 
 			// Application-specific version management - 使用相同的参数名 :id
 			appVersions := applications.Group("/:id/versions")

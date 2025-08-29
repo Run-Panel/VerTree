@@ -11,13 +11,15 @@ import (
 
 // VersionService handles version-related business logic
 type VersionService struct {
-	db *gorm.DB
+	db             *gorm.DB
+	channelService *ChannelService
 }
 
 // NewVersionService creates a new version service instance
 func NewVersionService() *VersionService {
 	return &VersionService{
-		db: database.DB,
+		db:             database.DB,
+		channelService: NewChannelService(),
 	}
 }
 
@@ -29,10 +31,9 @@ func (s *VersionService) CreateVersion(req *models.VersionRequest) (*models.Vers
 		return nil, fmt.Errorf("version %s already exists for this app", req.Version)
 	}
 
-	// Validate channel exists for this app
-	var channel models.Channel
-	if err := s.db.Where("app_id = ? AND name = ? AND is_active = ?", req.AppID, req.Channel, true).First(&channel).Error; err != nil {
-		return nil, fmt.Errorf("invalid or inactive channel %s for app %s", req.Channel, req.AppID)
+	// Validate channel is enabled for this app
+	if err := s.channelService.ValidateChannelForApp(req.AppID, req.Channel); err != nil {
+		return nil, err
 	}
 
 	version := &models.Version{
@@ -53,6 +54,19 @@ func (s *VersionService) CreateVersion(req *models.VersionRequest) (*models.Vers
 
 	if err := s.db.Create(version).Error; err != nil {
 		return nil, fmt.Errorf("failed to create version: %w", err)
+	}
+
+	// Check if channel has AutoPublish enabled for this app
+	var appChannel models.ApplicationChannel
+	if err := s.db.Where("app_id = ? AND channel_name = ?", req.AppID, req.Channel).First(&appChannel).Error; err == nil {
+		if appChannel.AutoPublish {
+			now := time.Now()
+			version.IsPublished = true
+			version.PublishTime = &now
+			if err := s.db.Save(version).Error; err != nil {
+				return nil, fmt.Errorf("failed to auto-publish version: %w", err)
+			}
+		}
 	}
 
 	return version, nil
@@ -90,10 +104,9 @@ func (s *VersionService) UpdateVersion(id uint, req *models.VersionRequest) (*mo
 		}
 	}
 
-	// Validate channel exists
-	var channel models.Channel
-	if err := s.db.Where("name = ? AND is_active = ?", req.Channel, true).First(&channel).Error; err != nil {
-		return nil, fmt.Errorf("invalid or inactive channel: %s", req.Channel)
+	// Validate channel is enabled for this app
+	if err := s.channelService.ValidateChannelForApp(version.AppID, req.Channel); err != nil {
+		return nil, err
 	}
 
 	// Update fields
@@ -125,6 +138,24 @@ func (s *VersionService) PublishVersion(id uint) (*models.Version, error) {
 
 	if version.IsPublished {
 		return nil, fmt.Errorf("version is already published")
+	}
+
+	// Validate that the associated channel is still active and enabled for this app
+	if err := s.channelService.ValidateChannelForApp(version.AppID, version.Channel); err != nil {
+		return nil, fmt.Errorf("failed to validate channel: %w", err)
+	}
+
+	// Get the global channel to check if it's active
+	var channel models.Channel
+	if err := s.db.Where("name = ?", version.Channel).First(&channel).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("channel %s not found", version.Channel)
+		}
+		return nil, fmt.Errorf("failed to get channel: %w", err)
+	}
+
+	if !channel.IsActive {
+		return nil, fmt.Errorf("cannot publish version to inactive channel %s", version.Channel)
 	}
 
 	now := time.Now()

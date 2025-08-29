@@ -77,8 +77,13 @@ func RequirePermission(permission string) gin.HandlerFunc {
 			return
 		}
 
-		permissionList, ok := permissions.([]string)
-		if !ok {
+		var permissionList []string
+		switch p := permissions.(type) {
+		case []string:
+			permissionList = p
+		case models.PermissionsList:
+			permissionList = []string(p)
+		default:
 			c.JSON(http.StatusForbidden, models.ErrorResponseWithCode(403, "Invalid permissions format", nil))
 			c.Abort()
 			return

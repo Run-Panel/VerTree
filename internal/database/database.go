@@ -130,28 +130,25 @@ func SeedDefaultData() error {
 	if count == 0 {
 		defaultChannels := []models.Channel{
 			{
-				Name:              "stable",
-				DisplayName:       "稳定版",
-				Description:       "经过充分测试的稳定版本",
-				IsActive:          true,
-				AutoPublish:       false,
-				RolloutPercentage: 100,
+				Name:        "stable",
+				DisplayName: "稳定版",
+				Description: "经过充分测试的稳定版本",
+				IsActive:    true,
+				SortOrder:   1,
 			},
 			{
-				Name:              "beta",
-				DisplayName:       "测试版",
-				Description:       "功能完整的测试版本",
-				IsActive:          true,
-				AutoPublish:       false,
-				RolloutPercentage: 100,
+				Name:        "beta",
+				DisplayName: "测试版",
+				Description: "功能完整的测试版本",
+				IsActive:    true,
+				SortOrder:   2,
 			},
 			{
-				Name:              "alpha",
-				DisplayName:       "预览版",
-				Description:       "最新功能预览版本",
-				IsActive:          true,
-				AutoPublish:       false,
-				RolloutPercentage: 50,
+				Name:        "alpha",
+				DisplayName: "预览版",
+				Description: "最新功能预览版本",
+				IsActive:    true,
+				SortOrder:   3,
 			},
 		}
 

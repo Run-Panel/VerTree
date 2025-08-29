@@ -14,9 +14,12 @@
         <el-form-item :label="$t('version.channel')">
           <el-select v-model="filters.channel" :placeholder="$t('versions.allChannels')" clearable>
             <el-option :label="$t('versions.allChannels')" value="" />
-            <el-option :label="$t('versions.stable')" value="stable" />
-            <el-option :label="$t('versions.beta')" value="beta" />
-            <el-option :label="$t('versions.alpha')" value="alpha" />
+            <el-option 
+              v-for="channel in availableChannels" 
+              :key="channel.name" 
+              :label="channel.display_name" 
+              :value="channel.name"
+            />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -133,6 +136,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getVersions, deleteVersion as deleteVersionAPI, publishVersion as publishVersionAPI, unpublishVersion as unpublishVersionAPI } from '@/api/version'
+import { getChannels } from '@/api/channel'
 import VersionForm from '@/components/VersionForm.vue'
 
 const { t } = useI18n()
@@ -140,6 +144,7 @@ const loading = ref(false)
 const showCreateDialog = ref(false)
 const editingVersion = ref(null)
 const versions = ref([])
+const availableChannels = ref([])
 
 const filters = reactive({
   channel: ''
@@ -254,7 +259,18 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleString()
 }
 
+// 加载全局通道列表
+const fetchChannels = async () => {
+  try {
+    const response = await getChannels()
+    availableChannels.value = response.data || []
+  } catch (error) {
+    console.error('Failed to fetch channels:', error)
+  }
+}
+
 onMounted(() => {
+  fetchChannels()
   fetchVersions()
 })
 </script>

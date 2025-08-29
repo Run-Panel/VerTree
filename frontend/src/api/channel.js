@@ -41,3 +41,36 @@ export function deleteChannel(id) {
     method: 'delete'
   })
 }
+
+// Get enabled channels by app
+export function getChannelsByApp(appId) {
+  return request({
+    url: `/applications/${appId}/channels`,
+    method: 'get'
+  })
+}
+
+// Get all channels (enabled and disabled) for app
+export function getAllChannelsForApp(appId) {
+  return request({
+    url: `/applications/${appId}/channels/all`,
+    method: 'get'
+  })
+}
+
+// Enable/configure channel for app
+export function enableChannelForApp(appId, channelName, data) {
+  return request({
+    url: `/applications/${appId}/channels/${channelName}`,
+    method: 'put',
+    data
+  })
+}
+
+// Disable channel for app
+export function disableChannelForApp(appId, channelName) {
+  return request({
+    url: `/applications/${appId}/channels/${channelName}`,
+    method: 'delete'
+  })
+}

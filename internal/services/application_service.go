@@ -46,42 +46,11 @@ func (s *ApplicationService) CreateApplication(req *models.ApplicationRequest, a
 		return nil, fmt.Errorf("failed to create application: %w", err)
 	}
 
-	// Create default channels for the application
-	defaultChannels := []models.Channel{
-		{
-			AppID:             app.AppID,
-			Name:              "stable",
-			DisplayName:       "稳定版",
-			Description:       "生产环境推荐使用的稳定版本",
-			IsActive:          true,
-			AutoPublish:       false,
-			RolloutPercentage: 100,
-		},
-		{
-			AppID:             app.AppID,
-			Name:              "beta",
-			DisplayName:       "测试版",
-			Description:       "包含新功能的测试版本，可能存在bug",
-			IsActive:          true,
-			AutoPublish:       false,
-			RolloutPercentage: 50,
-		},
-		{
-			AppID:             app.AppID,
-			Name:              "alpha",
-			DisplayName:       "开发版",
-			Description:       "最新开发版本，仅供开发和内部测试使用",
-			IsActive:          false,
-			AutoPublish:       false,
-			RolloutPercentage: 10,
-		},
-	}
-
-	for _, channel := range defaultChannels {
-		if err := s.db.Create(&channel).Error; err != nil {
-			// Log error but don't fail the application creation
-			fmt.Printf("Warning: failed to create default channel %s for app %s: %v\n", channel.Name, app.AppID, err)
-		}
+	// Enable default channels for the application
+	channelService := NewChannelService()
+	if err := channelService.EnableDefaultChannelsForApp(app.AppID); err != nil {
+		// Log error but don't fail the application creation
+		fmt.Printf("Warning: failed to enable default channels for app %s: %v\n", app.AppID, err)
 	}
 
 	return app, nil

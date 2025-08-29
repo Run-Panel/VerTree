@@ -11,7 +11,7 @@ type Version struct {
 	ID                uint           `json:"id" gorm:"primaryKey"`
 	AppID             string         `json:"app_id" gorm:"size:32;uniqueIndex:idx_app_version" validate:"required"`
 	Version           string         `json:"version" gorm:"not null;size:50;uniqueIndex:idx_app_version" validate:"required"`
-	Channel           string         `json:"channel" gorm:"not null;size:20;default:stable" validate:"required,oneof=stable beta alpha"`
+	Channel           string         `json:"channel" gorm:"not null;size:20;default:stable" validate:"required"`
 	Title             string         `json:"title" gorm:"not null;size:200" validate:"required"`
 	Description       string         `json:"description" gorm:"type:text"`
 	ReleaseNotes      string         `json:"release_notes" gorm:"type:text"`
@@ -40,7 +40,7 @@ func (Version) TableName() string {
 type VersionRequest struct {
 	AppID             string `json:"app_id" validate:"required"`
 	Version           string `json:"version" validate:"required"`
-	Channel           string `json:"channel" validate:"required,oneof=stable beta alpha"`
+	Channel           string `json:"channel" validate:"required"`
 	Title             string `json:"title" validate:"required"`
 	Description       string `json:"description"`
 	ReleaseNotes      string `json:"release_notes"`

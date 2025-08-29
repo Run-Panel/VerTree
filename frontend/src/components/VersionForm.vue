@@ -16,11 +16,22 @@
     </el-form-item>
     
     <el-form-item :label="$t('version.channel')" prop="channel">
-      <el-select v-model="form.channel" placeholder="选择发布通道">
-        <el-option label="稳定版" value="stable" />
-        <el-option label="测试版" value="beta" />
-        <el-option label="预览版" value="alpha" />
+      <el-select 
+        v-model="form.channel" 
+        placeholder="选择发布通道"
+        :loading="channelsLoading"
+        :disabled="!form.app_id"
+      >
+        <el-option 
+          v-for="channel in availableChannels" 
+          :key="channel.channel_name" 
+          :label="channel.channel_display_name || channel.channel_name" 
+          :value="channel.channel_name"
+          :disabled="!channel.is_enabled"
+        />
       </el-select>
+      <div v-if="!form.app_id" class="form-help">请先选择应用</div>
+      <div v-else-if="availableChannels.length === 0" class="form-help">该应用暂无可用通道</div>
     </el-form-item>
     
     <el-form-item :label="$t('version.versionTitle')" prop="title">
@@ -119,6 +130,7 @@ import { ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { createVersion, updateVersion, publishVersion as publishVersionAPI, createVersionWithFile, updateVersionWithFile } from '@/api/version'
 import { getApplications } from '@/api/application'
+import { getChannelsByApp } from '@/api/channel'
 import CryptoJS from 'crypto-js'
 
 const props = defineProps({
@@ -136,12 +148,14 @@ const uploadRef = ref()
 const fileSourceType = ref('url') // 'url' or 'upload'
 const uploadedFile = ref(null)
 const applications = ref([])
+const availableChannels = ref([])
+const channelsLoading = ref(false)
 
 // 定义表单数据
 const form = reactive({
   app_id: '',
   version: '',
-  channel: 'stable',
+  channel: '',
   title: '',
   description: '',
   release_notes: '',
@@ -323,9 +337,58 @@ const fetchApplications = async () => {
   }
 }
 
+// 加载指定应用的通道
+const loadChannelsForApp = async (appId) => {
+  if (!appId) return
+  
+  channelsLoading.value = true
+  try {
+    console.log('Loading channels for app:', appId)
+    const response = await getChannelsByApp(appId)
+    console.log('Channels response:', response)
+    
+    // 处理响应格式
+    let channelData = []
+    if (response && response.data) {
+      if (Array.isArray(response.data)) {
+        channelData = response.data
+      } else if (response.data.data && Array.isArray(response.data.data)) {
+        channelData = response.data.data
+      }
+    } else if (Array.isArray(response)) {
+      channelData = response
+    }
+    
+    availableChannels.value = channelData
+    console.log('Channels loaded:', availableChannels.value)
+    
+  } catch (error) {
+    console.error('Failed to fetch channels:', error)
+    ElMessage.error('获取通道列表失败: ' + (error.message || '网络错误'))
+    availableChannels.value = []
+  } finally {
+    channelsLoading.value = false
+  }
+}
+
+// 监听应用选择变化，加载对应通道
+watch(() => form.app_id, (newAppId, oldAppId) => {
+  if (newAppId && newAppId !== oldAppId) {
+    loadChannelsForApp(newAppId)
+    form.channel = '' // 重置通道选择
+  } else if (!newAppId) {
+    availableChannels.value = []
+    form.channel = ''
+  }
+})
+
 // 组件挂载时获取应用列表
 onMounted(async () => {
   await fetchApplications()
+  // 如果是编辑模式且已有应用ID，加载对应的通道
+  if (props.version && form.app_id) {
+    await loadChannelsForApp(form.app_id)
+  }
 })
 
 const submitForm = async (action) => {

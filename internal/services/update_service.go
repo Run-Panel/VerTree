@@ -54,10 +54,15 @@ func (s *UpdateService) CheckUpdate(req *models.CheckUpdateRequest, clientIP str
 		}
 	}()
 
-	// Validate channel for this specific app
-	channel, err := s.channelSvc.GetChannelByAppAndName(req.AppID, req.Channel)
+	// Validate channel is enabled for this specific app
+	if err := s.channelSvc.ValidateChannelForApp(req.AppID, req.Channel); err != nil {
+		return nil, err
+	}
+
+	// Get the channel details
+	channel, err := s.channelSvc.GetChannelByName(req.Channel)
 	if err != nil {
-		return nil, fmt.Errorf("invalid channel %s for app %s", req.Channel, req.AppID)
+		return nil, fmt.Errorf("channel not found: %w", err)
 	}
 
 	if !channel.IsActive {
@@ -91,7 +96,7 @@ func (s *UpdateService) CheckUpdate(req *models.CheckUpdateRequest, clientIP str
 	}
 
 	// Check rollout rules
-	if !s.shouldReceiveUpdate(req, channel) {
+	if !s.shouldReceiveUpdate(req, req.AppID, req.Channel) {
 		return &models.CheckUpdateResponse{
 			HasUpdate: false,
 		}, nil
@@ -125,13 +130,20 @@ func (s *UpdateService) meetsMinimumVersion(currentVersion, minVersion string) b
 }
 
 // shouldReceiveUpdate checks if the client should receive the update based on rollout rules
-func (s *UpdateService) shouldReceiveUpdate(req *models.CheckUpdateRequest, channel *models.Channel) bool {
+func (s *UpdateService) shouldReceiveUpdate(req *models.CheckUpdateRequest, appID, channelName string) bool {
+	// Get application-channel configuration for rollout percentage
+	var appChannel models.ApplicationChannel
+	if err := s.channelSvc.db.Where("app_id = ? AND channel_name = ?", appID, channelName).First(&appChannel).Error; err != nil {
+		// If no specific configuration found, allow the update
+		return true
+	}
+
 	// Check rollout percentage
-	if channel.RolloutPercentage < 100 {
+	if appChannel.RolloutPercentage < 100 {
 		// Simple hash-based rollout - use client ID to determine eligibility
 		// This ensures consistent behavior for the same client
 		hash := s.hashString(req.ClientID)
-		if hash%100 >= channel.RolloutPercentage {
+		if hash%100 >= appChannel.RolloutPercentage {
 			return false
 		}
 	}

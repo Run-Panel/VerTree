@@ -27,7 +27,7 @@ type Application struct {
 	// Associations
 	CreatedByAdmin Admin            `gorm:"foreignKey:CreatedBy" json:"-"`
 	Versions       []Version        `gorm:"foreignKey:AppID;references:AppID" json:"-"`
-	Channels       []Channel        `gorm:"foreignKey:AppID;references:AppID" json:"-"`
+	Channels       []Channel        `gorm:"many2many:application_channels;joinForeignKey:AppID;joinReferences:ChannelName;foreignKey:AppID;references:Name" json:"-"`
 	Keys           []ApplicationKey `gorm:"foreignKey:AppID;references:AppID" json:"-"`
 }
 
