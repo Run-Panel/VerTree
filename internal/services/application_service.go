@@ -193,9 +193,10 @@ func (s *ApplicationService) DeleteApplication(appID string, adminID uint) error
 		return fmt.Errorf("failed to delete versions: %w", err)
 	}
 
-	if err := tx.Where("app_id = ?", appID).Delete(&models.Channel{}).Error; err != nil {
+	// Delete application-channel relationships (not the global channels themselves)
+	if err := tx.Where("app_id = ?", appID).Delete(&models.ApplicationChannel{}).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("failed to delete channels: %w", err)
+		return fmt.Errorf("failed to delete application-channel relationships: %w", err)
 	}
 
 	if err := tx.Where("app_id = ?", appID).Delete(&models.ApplicationKey{}).Error; err != nil {

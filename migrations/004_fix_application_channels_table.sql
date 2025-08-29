@@ -30,9 +30,14 @@ INSERT INTO `application_channels` (`app_id`, `channel_name`, `is_enabled`, `aut
 SELECT 
     a.app_id,
     c.name,
-    CASE WHEN c.name = 'stable' THEN true ELSE false END as is_enabled,
+    true as is_enabled,  -- Enable all default channels
     false as auto_publish,
-    100 as rollout_percentage,
+    CASE 
+        WHEN c.name = 'stable' THEN 100
+        WHEN c.name = 'beta' THEN 50
+        WHEN c.name = 'alpha' THEN 25
+        ELSE 100
+    END as rollout_percentage,
     datetime('now') as created_at,
     datetime('now') as updated_at
 FROM applications a

@@ -62,6 +62,9 @@ COPY --from=backend-builder /app/main .
 # Copy the frontend build from frontend-builder
 COPY --from=frontend-builder /app/web/admin ./web/admin
 
+# Copy migrations directory
+COPY --from=backend-builder /app/migrations ./migrations
+
 # Create uploads directory
 RUN mkdir -p uploads
 
