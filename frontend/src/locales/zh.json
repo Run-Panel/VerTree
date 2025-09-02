@@ -4,7 +4,8 @@
     "applications": "应用管理",
     "version": "版本管理",
     "channel": "通道管理",
-    "statistics": "统计分析"
+    "statistics": "统计分析",
+    "github": "GitHub集成"
   },
   "common": {
     "confirm": "确认",
@@ -189,5 +190,66 @@
     "unpublishFailed": "取消发布失败",
     "deleteSuccess": "删除成功",
     "deleteFailed": "删除失败"
+  },
+  "github": {
+    "title": "GitHub集成管理",
+    "subtitle": "管理应用的GitHub仓库绑定和版本同步",
+    "repository": "仓库",
+    "repositoryUrl": "仓库URL",
+    "owner": "所有者",
+    "repoName": "仓库名",
+    "branch": "分支",
+    "accessToken": "访问令牌",
+    "defaultChannel": "默认发布渠道",
+    "autoSync": "自动同步",
+    "autoPublish": "自动发布",
+    "enableGitHub": "启用GitHub集成",
+    "disableGitHub": "禁用GitHub集成",
+    "bindRepository": "绑定GitHub仓库",
+    "syncStatus": {
+      "success": "同步成功",
+      "syncing": "同步中",
+      "failed": "同步失败",
+      "pending": "等待同步"
+    },
+    "actions": {
+      "sync": "同步",
+      "viewReleases": "查看版本",
+      "edit": "编辑",
+      "enable": "启用",
+      "disable": "禁用",
+      "delete": "删除"
+    },
+    "stats": {
+      "totalRepositories": "绑定仓库",
+      "activeRepositories": "活跃仓库",
+      "syncingRepositories": "同步中",
+      "totalReleases": "同步版本"
+    },
+    "validation": {
+      "repositoryUrlRequired": "请输入GitHub仓库URL",
+      "ownerRequired": "请输入仓库所有者",
+      "repoNameRequired": "请输入仓库名称",
+      "branchRequired": "请输入分支名称",
+      "accessTokenRequired": "请输入GitHub访问令牌",
+      "defaultChannelRequired": "请选择默认发布渠道"
+    },
+    "messages": {
+      "syncRequested": "同步请求已发送，请稍后查看结果",
+      "syncFailed": "同步失败",
+      "repositoryEnabled": "仓库已启用",
+      "repositoryDisabled": "仓库已禁用",
+      "repositoryDeleted": "仓库绑定已删除",
+      "repositoryCreated": "仓库绑定创建成功",
+      "repositoryUpdated": "仓库绑定更新成功",
+      "fetchRepositoriesFailed": "获取仓库列表失败",
+      "fetchReleasesFailed": "获取版本列表失败"
+    },
+    "dialog": {
+      "createTitle": "绑定GitHub仓库",
+      "editTitle": "编辑仓库绑定",
+      "releasesTitle": "GitHub版本发布",
+      "confirmDelete": "确定要删除仓库绑定吗？"
+    }
   }
 }

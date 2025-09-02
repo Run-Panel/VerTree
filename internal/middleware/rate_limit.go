@@ -124,10 +124,13 @@ func RateLimitMiddleware(limiter *RateLimiter) gin.HandlerFunc {
 // CreateRateLimiters creates different rate limiters for different endpoints
 func CreateRateLimiters() map[string]*RateLimiter {
 	return map[string]*RateLimiter{
-		"auth":   NewRateLimiter(5, time.Minute),     // 5 requests per minute for auth endpoints
-		"admin":  NewRateLimiter(100, time.Minute),   // 100 requests per minute for admin endpoints
-		"client": NewRateLimiter(1000, time.Minute),  // 1000 requests per minute for client endpoints
-		"global": NewRateLimiter(10000, time.Minute), // 10000 requests per minute globally
+		"auth":     NewRateLimiter(5, time.Minute),     // 5 requests per minute for auth endpoints
+		"admin":    NewRateLimiter(100, time.Minute),   // 100 requests per minute for admin endpoints
+		"client":   NewRateLimiter(1000, time.Minute),  // 1000 requests per minute for client endpoints
+		"download": NewRateLimiter(50, time.Minute),    // 50 downloads per minute for download endpoints
+		"public":   NewRateLimiter(200, time.Minute),   // 200 requests per minute for public version info
+		"webhook":  NewRateLimiter(10, time.Minute),    // 10 webhooks per minute per repository
+		"global":   NewRateLimiter(10000, time.Minute), // 10000 requests per minute globally
 	}
 }
 

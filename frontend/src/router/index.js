@@ -64,6 +64,15 @@ const routes = [
         }
       },
       {
+        path: 'github',
+        name: 'GitHubManagement',
+        component: () => import('@/views/GitHubManagement.vue'),
+        meta: { 
+          titleKey: 'nav.github',
+          permission: 'admin'
+        }
+      },
+      {
         path: 'docs',
         name: 'APIDocs',
         component: () => import('@/views/APIDocs.vue'),

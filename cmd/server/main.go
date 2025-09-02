@@ -108,7 +108,10 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	channelHandler := admin.NewChannelHandler()
 	statsHandler := admin.NewStatsHandler()
 	apiDocsHandler := admin.NewAPIDocsHandler()
+	githubHandler := admin.NewGitHubHandler()
+	webhookHandler := admin.NewWebhookHandler()
 	updateHandler := client.NewUpdateHandler()
+	downloadHandler := client.NewDownloadHandler()
 
 	// Auth API routes (public endpoints with rate limiting)
 	authGroup := router.Group("/auth/api/v1")
@@ -187,6 +190,23 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		adminV1.GET("/stats/distribution", statsHandler.GetVersionDistribution)
 		adminV1.GET("/stats/regions", statsHandler.GetRegionDistribution)
 
+		// GitHub Integration
+		github := adminV1.Group("/github")
+		{
+			repositories := github.Group("/repositories")
+			{
+				repositories.POST("", githubHandler.CreateRepository)
+				repositories.GET("", githubHandler.GetRepositories)
+				repositories.GET("/:id", githubHandler.GetRepository)
+				repositories.PUT("/:id", githubHandler.UpdateRepository)
+				repositories.DELETE("/:id", githubHandler.DeleteRepository)
+				repositories.POST("/:id/sync", githubHandler.SyncRepository)
+				repositories.GET("/:id/releases", githubHandler.GetRepositoryReleases)
+				repositories.POST("/validate", githubHandler.ValidateRepository)
+			}
+			github.POST("/test-token", githubHandler.TestToken)
+		}
+
 		// API Documentation
 		adminV1.GET("/docs", apiDocsHandler.GetAPIDocs)
 
@@ -211,6 +231,31 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		clientV1.POST("/download-started", middleware.RequirePermission("download"), updateHandler.DownloadStarted)
 		clientV1.POST("/install-result", middleware.RequirePermission("install"), updateHandler.InstallResult)
 		clientV1.GET("/versions", middleware.RequirePermission("check_update"), updateHandler.GetVersions)
+	}
+
+	// Public download routes (no authentication required)
+	downloadV1 := router.Group("/api/v1/download")
+	downloadV1.Use(middleware.RateLimitByType(rateLimiters, "download"))
+	{
+		downloadV1.GET("/latest/:app_id/:channel", downloadHandler.DownloadLatestVersion)
+		downloadV1.GET("/version/:app_id/:version", downloadHandler.DownloadSpecificVersion)
+		downloadV1.GET("/cached/:file_id", downloadHandler.DownloadCachedFile)
+	}
+
+	// Version info routes (public with light rate limiting)
+	versionInfoV1 := router.Group("/api/v1")
+	versionInfoV1.Use(middleware.RateLimitByType(rateLimiters, "public"))
+	{
+		versionInfoV1.GET("/version-info/:app_id/:channel", downloadHandler.GetVersionInfo)
+		versionInfoV1.GET("/version-history/:app_id/:channel", downloadHandler.GetVersionHistory)
+		// Note: check-update endpoint is handled in clientV1 group with authentication
+	}
+
+	// Webhook routes (public with special rate limiting)
+	webhookV1 := router.Group("/api/v1/webhook")
+	webhookV1.Use(middleware.RateLimitByType(rateLimiters, "webhook"))
+	{
+		webhookV1.POST("/github/:repo_id", webhookHandler.HandleWebhook)
 	}
 
 	// Serve static files for admin frontend (public access)

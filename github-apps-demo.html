@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerTree - GitHub Apps 配置向导演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            padding: 24px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .feature-card h3 {
+            color: #333;
+            margin: 0 0 12px 0;
+            font-size: 18px;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .demo-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-section h2 {
+            color: #333;
+            margin: 0 0 20px 0;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .step h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        
+        .step p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .access-button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        
+        .access-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .warning strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .comparison-card {
+            padding: 20px;
+            border-radius: 6px;
+        }
+        
+        .old-way {
+            background: #fee;
+            border: 1px solid #fcc;
+        }
+        
+        .new-way {
+            background: #efe;
+            border: 1px solid #cfc;
+        }
+        
+        .comparison h4 {
+            margin: 0 0 12px 0;
+        }
+        
+        .comparison ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .comparison li {
+            margin-bottom: 6px;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌳 VerTree</div>
+            <div class="subtitle">GitHub Apps 配置向导 - 让组织仓库接入变得简单</div>
+        </div>
+        
+        <div class="warning">
+            <strong>🎯 解决GitHub组织限制问题</strong>
+            当您尝试连接GitHub组织仓库时，遇到"GitHub说，由于我这是组织，所以只允许GitHub Apps"错误？
+            我们的新功能让这个问题一键解决！
+        </div>
+        
+        <div class="comparison">
+            <div class="comparison-card old-way">
+                <h4>❌ 之前的体验</h4>
+                <ul>
+                    <li>遇到组织限制错误</li>
+                    <li>需要查阅复杂文档</li>
+                    <li>手动创建GitHub App</li>
+                    <li>自行配置权限和事件</li>
+                    <li>手动获取各种ID</li>
+                    <li>容易出错，配置复杂</li>
+                </ul>
+            </div>
+            <div class="comparison-card new-way">
+                <h4>✅ 现在的体验</h4>
+                <ul>
+                    <li>智能识别组织仓库</li>
+                    <li>可视化分步引导</li>
+                    <li>一键跳转GitHub创建</li>
+                    <li>自动权限配置建议</li>
+                    <li>自动获取Installation列表</li>
+                    <li>实时验证和错误提示</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🚀 新功能亮点</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🎯 智能认证方式选择</h3>
+                    <p>系统自动推荐最适合的认证方式，GitHub Apps用于组织仓库，Personal Token用于个人仓库。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📋 分步配置向导</h3>
+                    <p>三步完成配置：创建应用 → 填写信息 → 测试连接，每一步都有详细指导。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🔗 一键跳转GitHub</h3>
+                    <p>智能识别仓库所属组织，直接跳转到正确的GitHub Apps创建页面。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📝 可视化安装列表</h3>
+                    <p>自动获取并展示所有可用的GitHub App安装，点击即可选择。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>✅ 实时验证测试</h3>
+                    <p>配置完成后立即测试连接，显示详细的验证结果和错误提示。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🎨 友好的用户界面</h3>
+                    <p>现代化的UI设计，响应式布局，支持移动端操作。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📖 使用流程</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>选择认证方式</h4>
+                    <p>在仓库绑定页面选择"GitHub Apps"认证方式，系统会启动配置向导。</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>创建GitHub App</h4>
+                    <p>点击"去GitHub创建应用"按钮，系统会自动跳转到正确的创建页面，并提供详细的配置指导。</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>填写配置信息</h4>
+                    <p>输入GitHub App ID和私钥，系统会自动获取可用的安装列表供您选择。</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h4>测试连接</h4>
+                    <p>一键测试GitHub App连接，系统会验证配置正确性并显示详细的应用信息。</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h4>完成配置</h4>
+                    <p>测试通过后即可保存配置，开始享受无缝的GitHub集成体验。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; padding: 30px 0;">
+            <h2>🎉 立即体验</h2>
+            <p style="color: #666; margin-bottom: 20px;">
+                现在就访问VerTree管理界面，体验全新的GitHub Apps配置向导！
+            </p>
+            <a href="http://localhost:8080/admin-ui" class="access-button" target="_blank">
+                🚀 进入VerTree管理界面
+            </a>
+        </div>
+        
+        <div style="background: #f1f3f4; padding: 20px; border-radius: 6px; margin-top: 30px; text-align: center; color: #666;">
+            <p>💡 <strong>提示：</strong> 如果您是第一次使用，建议先阅读我们的 
+            <a href="/docs/github-apps-setup.md" style="color: #667eea;">GitHub Apps设置指南</a> 
+            了解详细步骤。</p>
+        </div>
+    </div>
+</body>
+</html>

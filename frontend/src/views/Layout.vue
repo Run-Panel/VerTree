@@ -113,6 +113,11 @@
             <el-icon><TrendCharts /></el-icon>
             <template #title>{{ $t('nav.statistics') }}</template>
           </el-menu-item>
+          
+          <el-menu-item index="/github" class="menu-item">
+            <el-icon><Connection /></el-icon>
+            <template #title>{{ $t('nav.github') }}</template>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -231,7 +236,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox, ElDialog, ElForm, ElFormItem, ElInput, ElButton } from 'element-plus'
 import { useAuthStore } from '@/store/auth'
-import { Expand, Fold, Files, Document } from '@element-plus/icons-vue'
+import { Expand, Fold, Files, Document, Connection } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const { locale, t } = useI18n()

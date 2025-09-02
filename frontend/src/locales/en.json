@@ -4,7 +4,8 @@
     "applications": "Applications",
     "version": "Version Management",
     "channel": "Channel Management",
-    "statistics": "Statistics"
+    "statistics": "Statistics",
+    "github": "GitHub Integration"
   },
   "common": {
     "confirm": "Confirm",
@@ -189,5 +190,66 @@
     "unpublishFailed": "Unpublish failed",
     "deleteSuccess": "Deleted successfully",
     "deleteFailed": "Delete failed"
+  },
+  "github": {
+    "title": "GitHub Integration Management",
+    "subtitle": "Manage GitHub repository bindings and version synchronization",
+    "repository": "Repository",
+    "repositoryUrl": "Repository URL",
+    "owner": "Owner",
+    "repoName": "Repository Name",
+    "branch": "Branch",
+    "accessToken": "Access Token",
+    "defaultChannel": "Default Release Channel",
+    "autoSync": "Auto Sync",
+    "autoPublish": "Auto Publish",
+    "enableGitHub": "Enable GitHub Integration",
+    "disableGitHub": "Disable GitHub Integration",
+    "bindRepository": "Bind GitHub Repository",
+    "syncStatus": {
+      "success": "Sync Success",
+      "syncing": "Syncing",
+      "failed": "Sync Failed",
+      "pending": "Pending Sync"
+    },
+    "actions": {
+      "sync": "Sync",
+      "viewReleases": "View Releases",
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete"
+    },
+    "stats": {
+      "totalRepositories": "Bound Repositories",
+      "activeRepositories": "Active Repositories",
+      "syncingRepositories": "Syncing",
+      "totalReleases": "Synced Releases"
+    },
+    "validation": {
+      "repositoryUrlRequired": "Please enter GitHub repository URL",
+      "ownerRequired": "Please enter repository owner",
+      "repoNameRequired": "Please enter repository name",
+      "branchRequired": "Please enter branch name",
+      "accessTokenRequired": "Please enter GitHub access token",
+      "defaultChannelRequired": "Please select default release channel"
+    },
+    "messages": {
+      "syncRequested": "Sync request sent, please check results later",
+      "syncFailed": "Sync failed",
+      "repositoryEnabled": "Repository enabled",
+      "repositoryDisabled": "Repository disabled",
+      "repositoryDeleted": "Repository binding deleted",
+      "repositoryCreated": "Repository binding created successfully",
+      "repositoryUpdated": "Repository binding updated successfully",
+      "fetchRepositoriesFailed": "Failed to fetch repository list",
+      "fetchReleasesFailed": "Failed to fetch release list"
+    },
+    "dialog": {
+      "createTitle": "Bind GitHub Repository",
+      "editTitle": "Edit Repository Binding",
+      "releasesTitle": "GitHub Releases",
+      "confirmDelete": "Are you sure you want to delete this repository binding?"
+    }
   }
 }

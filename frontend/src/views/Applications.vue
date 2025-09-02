@@ -88,46 +88,109 @@
     <el-dialog
       v-model="showCreateDialog"
       :title="editingApp ? '编辑应用' : '创建应用'"
-      width="600px"
+      width="800px"
       @close="resetForm"
+      destroy-on-close
     >
-      <el-form
-        ref="appFormRef"
-        :model="appForm"
-        :rules="appFormRules"
-        label-width="100px"
-      >
-        <el-form-item label="应用名称" prop="name">
-          <el-input v-model="appForm.name" placeholder="请输入应用名称" />
-        </el-form-item>
-        
-        <el-form-item label="应用描述" prop="description">
-          <el-input
-            v-model="appForm.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入应用描述"
-          />
-        </el-form-item>
-        
-        <el-form-item label="图标URL" prop="icon_url">
-          <el-input v-model="appForm.icon_url" placeholder="请输入图标URL（可选）" />
-        </el-form-item>
-        
-        <el-form-item label="状态">
-          <el-switch
-            v-model="appForm.is_active"
-            active-text="启用"
-            inactive-text="禁用"
-          />
-        </el-form-item>
-      </el-form>
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+        <!-- Basic Information Tab -->
+        <el-tab-pane label="基本信息" name="basic">
+          <el-form
+            ref="appFormRef"
+            :model="appForm"
+            :rules="appFormRules"
+            label-width="100px"
+          >
+            <el-form-item label="应用名称" prop="name">
+              <el-input v-model="appForm.name" placeholder="请输入应用名称" />
+            </el-form-item>
+            
+            <el-form-item label="应用描述" prop="description">
+              <el-input
+                v-model="appForm.description"
+                type="textarea"
+                :rows="3"
+                placeholder="请输入应用描述"
+              />
+            </el-form-item>
+            
+            <el-form-item label="图标URL" prop="icon_url">
+              <el-input v-model="appForm.icon_url" placeholder="请输入图标URL（可选）" />
+            </el-form-item>
+            
+            <el-form-item label="状态">
+              <el-switch
+                v-model="appForm.is_active"
+                active-text="启用"
+                inactive-text="禁用"
+              />
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
+
+        <!-- GitHub Integration Tab -->
+        <el-tab-pane label="GitHub集成" name="github">
+          <div class="github-integration-section">
+            <div class="section-header">
+              <h3>GitHub仓库绑定</h3>
+              <p>绑定GitHub仓库后，系统将自动同步发布的版本</p>
+            </div>
+            
+            <el-form-item>
+              <el-switch
+                v-model="enableGitHub"
+                active-text="启用GitHub集成"
+                inactive-text="禁用GitHub集成"
+                @change="handleGitHubToggle"
+              />
+            </el-form-item>
+
+            <div v-if="enableGitHub" class="github-form-container">
+              <GitHubRepositoryForm
+                ref="githubFormRef"
+                v-model="githubForm"
+                :loading="submitting"
+                @validation-change="handleGitHubValidation"
+              />
+            </div>
+
+            <el-alert
+              v-if="!enableGitHub"
+              title="GitHub集成已禁用"
+              type="info"
+              description="您可以稍后在应用详情页面中添加GitHub仓库绑定"
+              show-icon
+              :closable="false"
+            />
+          </div>
+        </el-tab-pane>
+      </el-tabs>
       
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showCreateDialog = false">取消</el-button>
-          <el-button type="primary" @click="submitForm" :loading="submitting">
-            {{ editingApp ? '更新' : '创建' }}
+          <el-button 
+            v-if="activeTab === 'basic'"
+            type="primary" 
+            @click="nextStep"
+            :disabled="!isBasicFormValid"
+          >
+            下一步：GitHub集成
+          </el-button>
+          <el-button 
+            v-if="activeTab === 'github'"
+            @click="activeTab = 'basic'"
+          >
+            上一步
+          </el-button>
+          <el-button 
+            v-if="activeTab === 'github'"
+            type="primary" 
+            @click="submitForm" 
+            :loading="submitting"
+            :disabled="enableGitHub && !isGitHubFormValid"
+          >
+            {{ editingApp ? '更新应用' : '创建应用' }}
           </el-button>
         </span>
       </template>
@@ -291,7 +354,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import {
@@ -304,6 +367,8 @@ import {
   updateApplicationKey,
   deleteApplicationKey
 } from '@/api/application'
+import { createGitHubRepository } from '@/api/github'
+import GitHubRepositoryForm from '@/components/GitHubRepositoryForm.vue'
 
 // Reactive data
 const loading = ref(false)
@@ -317,6 +382,7 @@ const showCreateDialog = ref(false)
 const submitting = ref(false)
 const editingApp = ref(null)
 const appFormRef = ref()
+const activeTab = ref('basic')
 const appForm = reactive({
   name: '',
   description: '',
@@ -330,6 +396,23 @@ const appFormRules = {
     { min: 2, max: 100, message: '应用名称长度在 2 到 100 个字符', trigger: 'blur' }
   ]
 }
+
+// GitHub integration
+const enableGitHub = ref(false)
+const githubFormRef = ref()
+const isBasicFormValid = ref(false)
+const isGitHubFormValid = ref(false)
+const githubForm = reactive({
+  repository_url: '',
+  owner_name: '',
+  repo_name: '',
+  branch_name: 'main',
+  access_token: '',
+  default_channel: 'stable',
+  is_active: true,
+  auto_sync: true,
+  auto_publish: false
+})
 
 // API Keys management
 const showKeysDialog = ref(false)
@@ -406,29 +489,81 @@ const editApplication = (app) => {
 
 const resetForm = () => {
   editingApp.value = null
+  activeTab.value = 'basic'
   appForm.name = ''
   appForm.description = ''
   appForm.icon_url = ''
   appForm.is_active = true
   appFormRef.value?.clearValidate()
+  
+  // Reset GitHub form
+  enableGitHub.value = false
+  isBasicFormValid.value = false
+  isGitHubFormValid.value = false
+  resetGitHubForm()
+}
+
+const resetGitHubForm = () => {
+  githubForm.repository_url = ''
+  githubForm.owner_name = ''
+  githubForm.repo_name = ''
+  githubForm.branch_name = 'main'
+  githubForm.access_token = ''
+  githubForm.default_channel = 'stable'
+  githubForm.is_active = true
+  githubForm.auto_sync = true
+  githubForm.auto_publish = false
+  githubFormRef.value?.clearValidate()
 }
 
 const submitForm = async () => {
+  // Validate basic form first
   if (!appFormRef.value) return
   
-  const valid = await appFormRef.value.validate().catch(() => false)
-  if (!valid) return
+  const appValid = await appFormRef.value.validate().catch(() => false)
+  if (!appValid) {
+    activeTab.value = 'basic'
+    return
+  }
+  
+  // Validate GitHub form if enabled
+  if (enableGitHub.value && githubFormRef.value) {
+    const githubValid = await githubFormRef.value.validate().catch(() => false)
+    if (!githubValid) {
+      activeTab.value = 'github'
+      return
+    }
+  }
   
   submitting.value = true
   try {
-    const formData = { ...appForm }
+    const appData = { ...appForm }
+    let createdApp = null
     
     if (editingApp.value) {
-      await updateApplication(editingApp.value.app_id, formData)
+      await updateApplication(editingApp.value.app_id, appData)
+      createdApp = editingApp.value
       ElMessage.success('应用更新成功')
     } else {
-      await createApplication(formData)
+      const response = await createApplication(appData)
+      createdApp = response.data
       ElMessage.success('应用创建成功')
+    }
+    
+    // Create GitHub repository binding if enabled
+    if (enableGitHub.value && createdApp) {
+      try {
+        const githubData = {
+          ...githubForm,
+          app_id: createdApp.app_id
+        }
+        
+        await createGitHubRepository(githubData)
+        ElMessage.success('GitHub仓库绑定成功，正在开始同步...')
+      } catch (githubError) {
+        console.error('Failed to create GitHub repository binding:', githubError)
+        ElMessage.warning('应用创建成功，但GitHub仓库绑定失败，请稍后在应用详情中重新绑定')
+      }
     }
     
     showCreateDialog.value = false
@@ -577,6 +712,58 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleString('zh-CN')
 }
 
+// GitHub integration methods
+const handleTabChange = (tabName) => {
+  if (tabName === 'basic') {
+    // Validate basic form when switching to GitHub tab
+    validateBasicForm()
+  }
+}
+
+const nextStep = async () => {
+  const valid = await validateBasicForm()
+  if (valid) {
+    activeTab.value = 'github'
+  }
+}
+
+const validateBasicForm = async () => {
+  if (!appFormRef.value) return false
+  
+  try {
+    await appFormRef.value.validate()
+    isBasicFormValid.value = true
+    return true
+  } catch {
+    isBasicFormValid.value = false
+    return false
+  }
+}
+
+const handleGitHubToggle = (enabled) => {
+  if (!enabled) {
+    resetGitHubForm()
+    isGitHubFormValid.value = true // Allow submission without GitHub
+  } else {
+    isGitHubFormValid.value = false // Require GitHub validation
+  }
+}
+
+const handleGitHubValidation = (isValid) => {
+  isGitHubFormValid.value = isValid
+}
+
+// Computed properties
+const canProceedToGitHub = computed(() => {
+  return isBasicFormValid.value
+})
+
+const canSubmit = computed(() => {
+  if (!isBasicFormValid.value) return false
+  if (enableGitHub.value && !isGitHubFormValid.value) return false
+  return true
+})
+
 // Lifecycle
 onMounted(() => {
   fetchApplications()
@@ -700,5 +887,46 @@ onMounted(() => {
 .key-display :deep(.el-input__inner) {
   font-family: monospace;
   font-size: 12px;
+}
+
+/* GitHub Integration Styles */
+.github-integration-section {
+  padding: 20px;
+}
+
+.github-integration-section .section-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.github-integration-section .section-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.github-integration-section .section-header p {
+  margin: 0;
+  color: #606266;
+  font-size: 14px;
+}
+
+.github-form-container {
+  margin-top: 20px;
+  padding: 20px;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+}
+
+:deep(.el-tabs__item) {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+:deep(.el-tabs__content) {
+  padding-top: 20px;
 }
 </style>
